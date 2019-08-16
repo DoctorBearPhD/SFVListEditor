@@ -1,5 +1,7 @@
 ﻿using GalaSoft.MvvmLight;
 using SFVAnimationsEditor.Model;
+using System.Collections.ObjectModel;
+using System.IO;
 
 namespace SFVAnimationsEditor.ViewModel
 {
@@ -13,10 +15,7 @@ namespace SFVAnimationsEditor.ViewModel
     {
         private readonly IDataService _dataService;
 
-        /// <summary>
-        /// The <see cref="WelcomeTitle" /> property's name.
-        /// </summary>
-        public const string WelcomeTitlePropertyName = "WelcomeTitle";
+        public string FilePath = "";
 
         private string _welcomeTitle = string.Empty;
 
@@ -26,33 +25,54 @@ namespace SFVAnimationsEditor.ViewModel
         /// </summary>
         public string WelcomeTitle
         {
-            get
-            {
-                return _welcomeTitle;
-            }
-            set
-            {
-                Set(ref _welcomeTitle, value);
-            }
+            get => _welcomeTitle;
+            set => Set(ref _welcomeTitle, value);
         }
+
+        private UassetFile _UFile;
+        public UassetFile UFile {
+            get => _UFile;
+            set => Set(ref _UFile, value);
+        }
+
+        private ObservableCollection<StringProperty> _UFileStringList;
+        public ObservableCollection<StringProperty> UFileStringList {
+            get => _UFileStringList;
+            set => Set(ref _UFileStringList, value);
+        }
+
+        private ObservableCollection<StringProperty> _FakeStringList;
+        public ObservableCollection<StringProperty> FakeStringList
+        {
+            get => _FakeStringList;
+            set => Set(ref _FakeStringList, value);
+        }
+
 
         /// <summary>
         /// Initializes a new instance of the MainViewModel class.
         /// </summary>
-        public MainViewModel(IDataService dataService)
+        public MainViewModel(IDataService dataService = null)
         {
             _dataService = dataService;
-            _dataService.GetData(
-                (item, error) =>
-                {
-                    if (error != null)
-                    {
-                        // Report error here
-                        return;
-                    }
+            //_dataService.GetData(
+            //    (item, error) =>
+            //    {
+            //        if (error != null)
+            //        {
+            //            // Report error here
+            //            return;
+            //        }
+            //    });
 
-                    WelcomeTitle = item.Title;
-                });
+            //_FakeStringList = new ObservableCollection<StringProperty>
+            //{
+            //    new StringProperty("generate"),
+            //    new StringProperty("dimentional"),
+            //    new StringProperty("displaying"),
+            //    new StringProperty("automatically"),
+            //    new StringProperty("attributes")
+            //};
         }
 
         ////public override void Cleanup()
@@ -61,5 +81,25 @@ namespace SFVAnimationsEditor.ViewModel
 
         ////    base.Cleanup();
         ////}
+        
+        public void ReadFile()
+        {
+            if (FilePath == "") return;
+
+            var br = new BinaryReader(File.OpenRead(FilePath));
+
+            _UFile = new UassetFile();
+
+            try
+            {
+                _UFile.ReadUasset(ref br);
+                UFile = _UFile;
+                UFileStringList = UFile.StringList;
+            }
+            catch
+            {
+
+            }
+        }
     }
 }

@@ -5,8 +5,8 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:ignore="http://www.galasoft.ch/ignore"
         mc:Ignorable="d ignore"
-        Height="300"
-        Width="300"
+        Height="800"
+        Width="800"
         Title="MVVM Light Application"
         DataContext="{Binding Main, Source={StaticResource Locator}}">
     
@@ -20,7 +20,32 @@
 
     <Grid x:Name="LayoutRoot">
 
-        <TextBlock FontSize="36"
+        <Grid.RowDefinitions>
+            <RowDefinition />
+            <RowDefinition Height="10"/>
+            <RowDefinition />
+        </Grid.RowDefinitions>
+        
+        <!-- EDITOR -->
+        <DataGrid ItemsSource="{Binding UFileStringList, Mode=TwoWay}" CanUserSortColumns="False" CanUserAddRows="True" AutoGenerateColumns="False" LoadingRow="OnLoadingRow">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Value" Binding="{Binding Value, Mode=TwoWay}" />
+                <DataGridTextColumn Header="Length" Binding="{Binding Value.Length}" IsReadOnly="True" />
+            </DataGrid.Columns>
+            
+        </DataGrid>
+        
+        <!-- SPLITTER -->
+        <GridSplitter Grid.Row="1" HorizontalAlignment="Stretch"></GridSplitter>
+        
+        <!-- CONSOLE -->
+        <TextBox Name="tbOutput" Grid.Row="2" MinHeight="200"
+                     FontFamily="Consolas"
+                     Background="{StaticResource SCB_Sidebar_Background}" Foreground="LightGray" BorderBrush="{x:Null}" 
+                     AcceptsReturn="True" VerticalScrollBarVisibility="Auto" IsReadOnlyCaretVisible="True" IsReadOnly="True" Grid.ColumnSpan="2"/>
+        
+        <TextBlock Visibility="Collapsed"
+                   FontSize="36"
                    FontWeight="Bold"
                    Foreground="Purple"
                    Text="{Binding WelcomeTitle}"
