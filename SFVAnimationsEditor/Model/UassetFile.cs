@@ -246,7 +246,7 @@ namespace SFVAnimationsEditor.Model
             bw.Write(preContentSize);
             bw.Seek(preContentSize, 0);
 
-            ////WriteUassetContent(ref br, ref bw);
+            WriteUassetContent(ref br, ref bw);
 
             // write post-content data
             bw.Write(0);
@@ -280,7 +280,20 @@ namespace SFVAnimationsEditor.Model
             bw.Write(FooterBytes);
         }
 
-        ////internal abstract void WriteUassetContent(ref BinaryReader br, ref BinaryWriter bw);
+        internal void WriteUassetContent(ref BinaryReader br, ref BinaryWriter bw)
+        {
+            //TODO: TEMP!!!
+
+            // Read and copy until footer bytes
+            br.BaseStream.Seek(LOC_PTR_CONTENT, 0);
+            
+            var readerContentPosition = br.ReadInt32();
+            br.BaseStream.Seek(readerContentPosition, 0);
+
+            var contentBytes = br.ReadBytes((int)(br.BaseStream.Length - readerContentPosition - 8));
+
+            bw.Write(contentBytes);
+        }
         ////internal abstract void UpdateStringList();
 
         internal void ReadStringList(BinaryReader br)
@@ -419,10 +432,10 @@ namespace SFVAnimationsEditor.Model
             bw.Write(Imports.Count);
             for (var i = 0; i < Imports.Count; i++)
             {
-                if (Imports.Items[i] == 0) {
-                    bw.Write(0);
-                    continue;
-                }
+                //if (Imports.Items[i] == 0) {
+                //    bw.Write(0);
+                //    continue;
+                //}
 
                 var importId = -Imports.Items[i] - 1;
                 bw.Write(importId); // TODO: Derive this value.
@@ -820,6 +833,8 @@ namespace SFVAnimationsEditor.Model
     {
         public string Value { get; set; } = "";
 
+
+        public StringProperty() { }
 
         public StringProperty(string value = "")
         {

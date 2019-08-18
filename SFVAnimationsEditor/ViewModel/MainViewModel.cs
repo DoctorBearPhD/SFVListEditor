@@ -1,5 +1,7 @@
 ﻿using GalaSoft.MvvmLight;
+using GalaSoft.MvvmLight.CommandWpf;
 using SFVAnimationsEditor.Model;
+using System;
 using System.Collections.ObjectModel;
 using System.IO;
 
@@ -47,6 +49,10 @@ namespace SFVAnimationsEditor.ViewModel
             get => _FakeStringList;
             set => Set(ref _FakeStringList, value);
         }
+
+
+        public RelayCommand SaveAsCopyCommand => new RelayCommand(SaveAsCopy);
+
 
 
         /// <summary>
@@ -100,6 +106,24 @@ namespace SFVAnimationsEditor.ViewModel
             {
 
             }
+        }
+
+        private void SaveAsCopy()
+        {
+            UFile.StringList = UFileStringList;
+
+            try
+            {
+                var br = new BinaryReader(File.OpenRead(FilePath));
+                var bw = new BinaryWriter(File.Create(FilePath.Replace(".uasset", "-Modified.uasset")));
+                UFile.WriteUasset(ref br, ref bw);
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+            
         }
     }
 }

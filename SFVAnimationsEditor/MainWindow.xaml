@@ -21,20 +21,27 @@
     <Grid x:Name="LayoutRoot">
 
         <Grid.RowDefinitions>
-            <RowDefinition />
+            <RowDefinition Height="2*"/>
             <RowDefinition Height="10"/>
             <RowDefinition />
         </Grid.RowDefinitions>
         
         <!-- EDITOR -->
-        <DataGrid ItemsSource="{Binding UFileStringList, Mode=TwoWay}" CanUserSortColumns="False" CanUserAddRows="True" AutoGenerateColumns="False" LoadingRow="OnLoadingRow">
-            <DataGrid.Columns>
-                <DataGridTextColumn Header="Value" Binding="{Binding Value, Mode=TwoWay}" />
-                <DataGridTextColumn Header="Length" Binding="{Binding Value.Length}" IsReadOnly="True" />
-            </DataGrid.Columns>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="3*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
             
-        </DataGrid>
-        
+            <DataGrid Grid.Row="0" ItemsSource="{Binding UFileStringList, Mode=TwoWay}" CanUserSortColumns="False" CanUserAddRows="True" AutoGenerateColumns="False" LoadingRow="OnLoadingRow">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Value" Binding="{Binding Value, Mode=TwoWay}" />
+                    <DataGridTextColumn Header="Length" Binding="{Binding Value.Length}" IsReadOnly="True" />
+                </DataGrid.Columns>
+            </DataGrid>
+
+            <Button Grid.Row="1" Content="Save As Copy" Command="{Binding SaveAsCopyCommand}" />
+        </Grid>
         <!-- SPLITTER -->
         <GridSplitter Grid.Row="1" HorizontalAlignment="Stretch"></GridSplitter>
         
