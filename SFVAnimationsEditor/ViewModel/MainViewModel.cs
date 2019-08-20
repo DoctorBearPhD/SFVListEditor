@@ -1,5 +1,6 @@
 ﻿using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.CommandWpf;
+using GalaSoft.MvvmLight.Ioc;
 using SFVAnimationsEditor.Model;
 using System;
 using System.Collections.ObjectModel;
@@ -37,18 +38,8 @@ namespace SFVAnimationsEditor.ViewModel
             set => Set(ref _UFile, value);
         }
 
-        private ObservableCollection<StringProperty> _UFileStringList;
-        public ObservableCollection<StringProperty> UFileStringList {
-            get => _UFileStringList;
-            set => Set(ref _UFileStringList, value);
-        }
-
-        private ObservableCollection<StringProperty> _FakeStringList;
-        public ObservableCollection<StringProperty> FakeStringList
-        {
-            get => _FakeStringList;
-            set => Set(ref _FakeStringList, value);
-        }
+        public AnimationsEditorViewModel AnimationsEditor { get; set; }
+        //public StringEditorViewModel StringEditor { get; set; }
 
 
         public RelayCommand SaveAsCopyCommand => new RelayCommand(SaveAsCopy);
@@ -71,14 +62,8 @@ namespace SFVAnimationsEditor.ViewModel
             //        }
             //    });
 
-            //_FakeStringList = new ObservableCollection<StringProperty>
-            //{
-            //    new StringProperty("generate"),
-            //    new StringProperty("dimentional"),
-            //    new StringProperty("displaying"),
-            //    new StringProperty("automatically"),
-            //    new StringProperty("attributes")
-            //};
+            AnimationsEditor = SimpleIoc.Default.GetInstance<AnimationsEditorViewModel>();
+            //StringEditor = SimpleIoc.Default.GetInstance<StringEditorViewModel>();
         }
 
         ////public override void Cleanup()
@@ -100,17 +85,18 @@ namespace SFVAnimationsEditor.ViewModel
             {
                 _UFile.ReadUasset(ref br);
                 UFile = _UFile;
-                UFileStringList = UFile.StringList;
+                //StringEditor.UFileStringList = UFile.StringList;
+                AnimationsEditor.GetAnimationList(UFile.ContentStructProperties, UFile.Declaration);
             }
             catch
             {
-
+                throw;
             }
         }
 
         private void SaveAsCopy()
         {
-            UFile.StringList = UFileStringList;
+            //UFile.StringList = (ObservableCollection<StringProperty>)StringEditor.UFileStringList;
 
             try
             {
@@ -124,6 +110,25 @@ namespace SFVAnimationsEditor.ViewModel
                 throw;
             }
             
+        }
+    }
+
+    public class StringListVMItem
+    {
+        public int Id { get; private set; }
+        public string Value { get; set; }
+        public int Length => Value.Length;
+
+
+        public StringListVMItem()
+        {
+            Id = 0;
+            Value = "String List Item";
+        }
+
+        public void UpdateId(ref System.Collections.Generic.IList<StringListVMItem> list)
+        {
+            Id = list.IndexOf(this);
         }
     }
 }

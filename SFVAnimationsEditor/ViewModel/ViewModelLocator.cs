@@ -38,6 +38,8 @@ namespace SFVAnimationsEditor.ViewModel
                 SimpleIoc.Default.Register<IDataService, DataService>();
             }
 
+            SimpleIoc.Default.Register<AnimationsEditorViewModel>();
+            SimpleIoc.Default.Register<StringEditorViewModel>();
             SimpleIoc.Default.Register<MainViewModel>();
         }
 
@@ -47,13 +49,24 @@ namespace SFVAnimationsEditor.ViewModel
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance",
             "CA1822:MarkMembersAsStatic",
             Justification = "This non-static member is needed for data binding purposes.")]
-        public MainViewModel Main
-        {
-            get
-            {
-                return ServiceLocator.Current.GetInstance<MainViewModel>();
-            }
-        }
+        public MainViewModel Main => ServiceLocator.Current.GetInstance<MainViewModel>();
+
+        /// <summary>
+        /// Gets the StringEditor property.
+        /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance",
+            "CA1822:MarkMembersAsStatic",
+            Justification = "This non-static member is needed for data binding purposes.")]
+        public StringEditorViewModel StringEditor => ServiceLocator.Current.GetInstance<StringEditorViewModel>();
+
+        /// <summary>
+        /// Gets the AnimationsEditor property.
+        /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance",
+            "CA1822:MarkMembersAsStatic",
+            Justification = "This non-static member is needed for data binding purposes.")]
+        public AnimationsEditorViewModel AnimationsEditor => ServiceLocator.Current.GetInstance<AnimationsEditorViewModel>();
+
 
         /// <summary>
         /// Cleans up all the resources.

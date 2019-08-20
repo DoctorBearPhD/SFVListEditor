@@ -3,11 +3,12 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:SFVAnimationsEditor"
         xmlns:ignore="http://www.galasoft.ch/ignore"
         mc:Ignorable="d ignore"
         Height="800"
         Width="800"
-        Title="MVVM Light Application"
+        Title="Animations Editor"
         DataContext="{Binding Main, Source={StaticResource Locator}}">
     
     <Window.Resources>
@@ -26,30 +27,30 @@
             <RowDefinition />
         </Grid.RowDefinitions>
         
-        <!-- EDITOR -->
-        <Grid>
+        <!-- EDITOR(S) -->
+        <Grid Grid.Row="0">
             <Grid.RowDefinitions>
                 <RowDefinition Height="3*" />
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
+
+            <!--<local:StringEditorView />-->
             
-            <DataGrid Grid.Row="0" ItemsSource="{Binding UFileStringList, Mode=TwoWay}" CanUserSortColumns="False" CanUserAddRows="True" AutoGenerateColumns="False" LoadingRow="OnLoadingRow">
-                <DataGrid.Columns>
-                    <DataGridTextColumn Header="Value" Binding="{Binding Value, Mode=TwoWay}" />
-                    <DataGridTextColumn Header="Length" Binding="{Binding Value.Length}" IsReadOnly="True" />
-                </DataGrid.Columns>
-            </DataGrid>
+            <!-- ANIMATION LIST EDITOR -->
+            <local:AnimationsEditorView />
+
 
             <Button Grid.Row="1" Content="Save As Copy" Command="{Binding SaveAsCopyCommand}" />
         </Grid>
-        <!-- SPLITTER -->
-        <GridSplitter Grid.Row="1" HorizontalAlignment="Stretch"></GridSplitter>
         
+        <!-- SPLITTER -->
+        <GridSplitter Grid.Row="1" HorizontalAlignment="Stretch" />
+
         <!-- CONSOLE -->
         <TextBox Name="tbOutput" Grid.Row="2" MinHeight="200"
                      FontFamily="Consolas"
                      Background="{StaticResource SCB_Sidebar_Background}" Foreground="LightGray" BorderBrush="{x:Null}" 
-                     AcceptsReturn="True" VerticalScrollBarVisibility="Auto" IsReadOnlyCaretVisible="True" IsReadOnly="True" Grid.ColumnSpan="2"/>
+                     AcceptsReturn="True" VerticalScrollBarVisibility="Auto" IsReadOnlyCaretVisible="True" IsReadOnly="True" />
         
         <TextBlock Visibility="Collapsed"
                    FontSize="36"

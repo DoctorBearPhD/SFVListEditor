@@ -22,6 +22,8 @@ namespace SFVAnimationsEditor.Model
         public UkDepends UkDepends { get; set; }
         // public __?__ UkLoads { get; set; }
 
+        public Dictionary<string, object> ContentStructProperties { get; set; }
+
         public long PtrFooter;
         public long PtrNoneString;
         public long NoneIndex;
@@ -42,6 +44,7 @@ namespace SFVAnimationsEditor.Model
 
         public byte[] Checksum;
         public byte[] FooterBytes;
+
 
         public delegate object PropertyTypeDelegate(BinaryReader br);
 
@@ -151,25 +154,8 @@ namespace SFVAnimationsEditor.Model
                              $"\n\tBinaryReader position: {br.BaseStream.Position} (0x{br.BaseStream.Position:X})");
 
             // Read Content struct
-            var attr = br.ReadInt32();
-            var reference = StringList[attr];
-            ReadZero(br);
-
-            var propType = br.ReadByte(); // get prop type for console output
-            br.BaseStream.Seek(-1, SeekOrigin.Current);
-
-            var propertyTypeDelegate = ReadPropertyType(br);
-
-            ////if (propertyTypeDelegate == ReadVoid)
-            ////{
-            ////    HandleReadVoid(br, attr);
-            ////}
-
-            var byteSize = ReadInt32AndZero(br);
-
-            Console.WriteLine($"Reading {reference} (0x{attr:X})\n\tType: {StringList[propType]} (0x{propType:X})\n\tSize: {byteSize} bytes (0x{byteSize:X})");
-
-            var content = propertyTypeDelegate(br);
+            
+            ContentStructProperties = ReadStruct(br);
 
             Console.WriteLine($"\nFinished reading uasset!");
 
@@ -305,7 +291,6 @@ namespace SFVAnimationsEditor.Model
             Console.WriteLine($"\nReading String List ({StringListCount} items): ");
 
             int stringSize, strIndex;
-            string str;
 
             while (StringList.Count < StringListCount)
             {
@@ -334,10 +319,12 @@ namespace SFVAnimationsEditor.Model
                 di.ReadItems(br, StringList);
                 di.Id = i;
 
-                Console.WriteLine(//"\n\t  Finished reading Declaration Item:" +
-                                 $"\n\t    Namespace:\t{di.Namespace}" + 
-                                 $"\n\t    Type:\t{di.Type}" + 
-                                 $"\n\t    Name:\t{di.Name}");
+                Console.Write(//"\n\t  Finished reading Declaration Item:" +
+                                 $"\n\t    Namespace:  {di.Namespace}" +
+                                 $"\n\t    Type:       {di.Type}" +
+                                 $"\n\t    Name:       {di.Name}");
+                Console.WriteLine(di.Depends != 0 ?
+                                 $"\n\t    Dependency: {di.Depends} (0x{di.Depends:X})" : "");
 
                 Declaration.Items[i] = di;
             }
@@ -521,7 +508,7 @@ namespace SFVAnimationsEditor.Model
                 // if it's safe to read, show these
                 var propType = ReadInt32AndZero(br);
                 var previewSize = ReadInt32AndZero(br);
-                Console.WriteLine("\tProperty Type: \"{0}\" (0x{1:X2} = {1:D2})", StringList[propType], propType);
+                Console.WriteLine("\tProperty Type: \"{0}\" (0x{1:X2} = {1:D2})", StringList[propType].Value, propType);
                 Console.WriteLine("\tSize: {0} bytes", (StringList[propType].Value == "ByteProperty") ? $"{previewSize} or {previewSize*2}" : previewSize.ToString());
 
                 if (previewSize == 0) { continue; }
@@ -552,7 +539,7 @@ namespace SFVAnimationsEditor.Model
 
             var propType = ReadInt32AndZero(br); // preview property type
 
-            Console.WriteLine($"\tProperty Type: \"{StringList[propType]}\" (0x{propType:X2} = {propType})");
+            Console.WriteLine($"\tProperty Type: \"{StringList[propType].Value}\" (0x{propType:X2} = {propType})");
             Console.WriteLine($"\tNumber of Items: {br.PeekChar()}");
 
             RollBack(br, 1, true); // go back to where we should be
@@ -634,7 +621,7 @@ namespace SFVAnimationsEditor.Model
 
             if (unparsedId == 0)
             {
-                Console.WriteLine("Read null object:");
+                Console.WriteLine("Read null object.");
                 obj.Name = null;
                 return obj;
             }
@@ -647,10 +634,9 @@ namespace SFVAnimationsEditor.Model
             else
             {
                 obj.Name = Declaration.Items[obj.Id].Name;
-                Console.WriteLine($"Read object:");
+                Console.Write($"Read object: ");
             }
-            Console.WriteLine($"\tID:\t{obj.Id}\n" + 
-                $"\tName:\t{obj.Name}\n");
+            Console.WriteLine($"\tID:\t{obj.Id} = Name:\t{obj.Name}\n");
 
             return obj;
         }
@@ -904,7 +890,7 @@ namespace SFVAnimationsEditor.Model
 
     public class DeclarationItem
     {
-        public int    Id; // is depends derived from this?
+        public int    Id;
         public string Namespace;
         public string Type;
         public string Name;
@@ -924,15 +910,11 @@ namespace SFVAnimationsEditor.Model
                 Console.Write($"{Items[i]}  ");
             }
 
-            // TODO: We're just copying the depends number. How do we derive it?
-            //      It probably requires storing a reference to the Id of the item and using the reference's Id to convert it back.
-            //      Also, there are depends with a value of 0 when they don't depend on anything, so those could just store a null reference.
-
             Namespace = stringList[Items[0]].Value;
             Type      = stringList[Items[2]].Value;
             Name      = stringList[Items[5]].Value;
 
-            Depends = Items[4]; // possibly temporary; Depends List ID of the item
+            Depends = Items[4]; // ID of the Dependency (if any) of the item
         }
 
         public void WriteItems(BinaryWriter bw, IList<string> stringList)

@@ -1,0 +1,29 @@
+﻿<UserControl x:Class="SFVAnimationsEditor.StringEditorView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:ignore="http://www.galasoft.ch/ignore"
+             mc:Ignorable="d ignore"
+             d:DesignWidth="800" d:DesignHeight="600"
+             DataContext="{Binding StringEditor, Source={StaticResource Locator}}">
+
+    <DockPanel>
+        <!-- STRING LIST LABEL -->
+        <Label Content="String List" Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}" FontWeight="Bold" FontSize="16" DockPanel.Dock="Top" />
+
+        <!-- STRING LIST EDITOR -->
+        <DataGrid ItemsSource="{Binding UFileStringList, Mode=TwoWay}" 
+                          CanUserSortColumns="False" 
+                          CanUserAddRows="True" 
+                          AutoGenerateColumns="False" 
+                          LoadingRow="OnLoadingRow">
+
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Value" Binding="{Binding Value, Mode=TwoWay}" />
+                <DataGridTextColumn Header="Length" Binding="{Binding Value.Length}" IsReadOnly="True" />
+            </DataGrid.Columns>
+
+        </DataGrid>
+    </DockPanel>
+</UserControl>

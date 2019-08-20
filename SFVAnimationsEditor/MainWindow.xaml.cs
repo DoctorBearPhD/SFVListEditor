@@ -26,7 +26,7 @@ namespace SFVAnimationsEditor
             Closing += (s, e) => ViewModelLocator.Cleanup();
 
 #if DEBUG
-            filePath = TEMP_FILEPATH;
+            filePath = path == "" ? TEMP_FILEPATH : path;
 #else
             if (path != string.Empty)
                 filePath = path;
@@ -50,9 +50,5 @@ namespace SFVAnimationsEditor
 
         // WPF Stuff
 
-        private void OnLoadingRow(object sender, DataGridRowEventArgs e)
-        {
-            e.Row.Header = e.Row.GetIndex().ToString() + $" (0x{e.Row.GetIndex():X2})";
-        }
     }
 }
