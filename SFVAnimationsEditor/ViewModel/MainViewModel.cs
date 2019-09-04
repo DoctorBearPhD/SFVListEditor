@@ -87,7 +87,8 @@ namespace SFVAnimationsEditor.ViewModel
         //public StringEditorViewModel StringEditor { get; set; }
 
 
-        public RelayCommand SaveAsCopyCommand => new RelayCommand(SaveAsCopy);
+        public RelayCommand OpenFileCommand => new RelayCommand( () => OpenFile() );
+        public RelayCommand SaveAsCommand => new RelayCommand(SaveAs, () => FilePath != "");
 
 
 
@@ -120,8 +121,6 @@ namespace SFVAnimationsEditor.ViewModel
         
         public void ReadFile()
         {
-            if (FilePath == "") return;
-
             var br = new BinaryReader(File.OpenRead(FilePath));
             var strPropComparer = new StringPropertyComparer();
 
@@ -160,8 +159,15 @@ namespace SFVAnimationsEditor.ViewModel
             }
         }
 
-        private void SaveAsCopy()
+        private void SaveAs()
         {
+            var saveDialog = new Microsoft.Win32.SaveFileDialog()
+            {
+                Filter = "UAsset files (*.uasset)|*.uasset|All files (*.*)|*.*"
+            };
+
+            if (saveDialog.ShowDialog() == false) return;
+
             Console.WriteLine($"\n({DateTime.Now}) Saving..." );
 
             // Update Strings List
@@ -179,18 +185,51 @@ namespace SFVAnimationsEditor.ViewModel
 
             try
             {
+                // make temp file
                 FileInfo fileInfo = new FileInfo(FilePath);
-                var br = new BinaryReader(File.OpenRead(FilePath));
-                Directory.CreateDirectory(fileInfo.DirectoryName + @"\output\");
-                var bw = new BinaryWriter(File.Create(fileInfo.DirectoryName + @"\output\" + fileInfo.Name));
+                var tempName = fileInfo.FullName + ".tmp";
+                File.Move(fileInfo.FullName, tempName); // NOTE: will crash if .tmp file already exists
+
+                // save
+                var br = new BinaryReader(File.OpenRead(tempName));
+                var bw = new BinaryWriter(File.Create(saveDialog.FileName));
                 UFile.WriteUasset(ref br, ref bw);
                 Console.WriteLine($"\n({DateTime.Now}) Save complete.");
+
+                // delete temp file
+                br.Dispose(); // release resources used by reader so the temp file can be deleted
+                File.Delete(tempName);
             }
             catch (Exception)
             {
                 throw;
             }
             
+        }
+
+        public void OpenFile(bool isFilePreselected = false)
+        {
+            if (!isFilePreselected)
+            {
+                // create open file dialog
+                var dialog = new Microsoft.Win32.OpenFileDialog()
+                {
+                    Filter = "UAsset files (*.uasset)|*.uasset|All files (*.*)|*.*"
+                };
+
+                if (dialog.ShowDialog() == false) return;
+
+                // set file path
+                FilePath = dialog.FileName;
+            }
+
+            if (FilePath == "") return;
+
+            // make backup
+            File.Copy(FilePath, FilePath + ".bak", true);
+
+            // restart main viewmodel
+            ReadFile();
         }
 
         private void UpdateStringsList()

@@ -11,8 +11,9 @@ namespace SFVAnimationsEditor
     public partial class MainWindow : Window
     {
 #if DEBUG
-        public const string TEMP_FILEPATH =
-            @"DA_RYU_AnimSeqWithIdContainer.uasset";
+        public const string TEMP_FILEPATH = 
+            "";
+        //    @"DA_RYU_AnimSeqWithIdContainer.uasset";
 #endif
 
         public MainViewModel mainVM;
@@ -46,9 +47,9 @@ namespace SFVAnimationsEditor
             if (filePath != "")
                 mainVM.FilePath = filePath;
             else
-                Console.WriteLine("You must drag a \"DA_***_AnimSeqWithIdContainer.uasset\" onto SFVAnimationsEditor.exe to edit.");
+                Console.WriteLine("TIP:  You can drag a \"DA_***_AnimSeqWithIdContainer.uasset\" onto SFVAnimationsEditor.exe to immediately open it for editing!");
 
-            mainVM.ReadFile();
+            mainVM.OpenFile(isFilePreselected: true);
         }
     }
 }

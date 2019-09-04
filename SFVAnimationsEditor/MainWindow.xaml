@@ -19,50 +19,48 @@
         </ResourceDictionary>
     </Window.Resources>
 
-    <Grid x:Name="LayoutRoot">
+    <Window.InputBindings>
+        <KeyBinding Modifiers="Ctrl" Key="S" Command="{Binding SaveAsCommand}"/>
+    </Window.InputBindings>
 
-        <Grid.RowDefinitions>
-            <RowDefinition Height="2*"/>
-            <RowDefinition Height="10"/>
-            <RowDefinition />
-            <!--<RowDefinition Height="10"/>
-            <RowDefinition />-->
-        </Grid.RowDefinitions>
+    <DockPanel>
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="_File">
+                <MenuItem Header="_Open" Command="{Binding OpenFileCommand}" />
+                <MenuItem Header="_Save As..." Command="{Binding SaveAsCommand}"/>
+            </MenuItem>
+        </Menu>
         
-        <!-- EDITOR(S) -->
-        <Grid Grid.Row="0">
+        <Grid>
+
             <Grid.RowDefinitions>
-                <RowDefinition Height="3*" />
-                <RowDefinition Height="Auto" />
+                <RowDefinition Height="2*"/>
+                <RowDefinition Height="10"/>
+                <RowDefinition />
+                <!--<RowDefinition Height="10"/>
+                <RowDefinition />-->
             </Grid.RowDefinitions>
 
-            <!--<local:StringEditorView />-->
-            
             <!-- ANIMATION LIST EDITOR -->
-            <local:AnimationsEditorView />
+            <local:AnimationsEditorView Grid.Row="0" />
 
+            <!-- SPLITTER -->
+            <GridSplitter Grid.Row="1" HorizontalAlignment="Stretch" />
 
-            <Button Grid.Row="1" Content="Save As Copy" Command="{Binding SaveAsCopyCommand}" />
-        </Grid>
-        
-        <!-- SPLITTER -->
-        <GridSplitter Grid.Row="1" HorizontalAlignment="Stretch" />
+            <!-- CONSOLE -->
+            <TextBox Name="tbOutput" Grid.Row="2" MinHeight="200"
+                         FontFamily="Consolas"
+                         Background="{StaticResource SCB_Sidebar_Background}" Foreground="LightGray" BorderBrush="{x:Null}" 
+                         AcceptsReturn="True" VerticalScrollBarVisibility="Auto" IsReadOnlyCaretVisible="True" IsReadOnly="True" TextWrapping="Wrap" />
 
-        <!-- CONSOLE -->
-        <TextBox Name="tbOutput" Grid.Row="2" MinHeight="200"
-                     FontFamily="Consolas"
-                     Background="{StaticResource SCB_Sidebar_Background}" Foreground="LightGray" BorderBrush="{x:Null}" 
-                     AcceptsReturn="True" VerticalScrollBarVisibility="Auto" IsReadOnlyCaretVisible="True" IsReadOnly="True" />
-
-        <!-- SPLITTER -->
-        <!--<GridSplitter Grid.Row="3" HorizontalAlignment="Stretch" />-->
-
-        <!-- DEBUG STUFF -->
-        <!-- DECLARE BLOCK VIEWER -->
-        <!--<DataGrid Grid.Row="4" x:Name="declarationViewer">
+            <!-- DEBUG STUFF -->
             
-        </DataGrid>-->
-        
-    </Grid>
-    
+            <!-- SPLITTER -->
+            <!--<GridSplitter Grid.Row="3" HorizontalAlignment="Stretch" />-->
+
+            <!-- DECLARE BLOCK VIEWER -->
+            <!--<DataGrid Grid.Row="4" x:Name="declarationViewer" />-->
+
+        </Grid>
+    </DockPanel>
 </Window>
