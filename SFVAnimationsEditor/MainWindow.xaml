@@ -25,6 +25,8 @@
             <RowDefinition Height="2*"/>
             <RowDefinition Height="10"/>
             <RowDefinition />
+            <!--<RowDefinition Height="10"/>
+            <RowDefinition />-->
         </Grid.RowDefinitions>
         
         <!-- EDITOR(S) -->
@@ -51,15 +53,16 @@
                      FontFamily="Consolas"
                      Background="{StaticResource SCB_Sidebar_Background}" Foreground="LightGray" BorderBrush="{x:Null}" 
                      AcceptsReturn="True" VerticalScrollBarVisibility="Auto" IsReadOnlyCaretVisible="True" IsReadOnly="True" />
-        
-        <TextBlock Visibility="Collapsed"
-                   FontSize="36"
-                   FontWeight="Bold"
-                   Foreground="Purple"
-                   Text="{Binding WelcomeTitle}"
-                   VerticalAlignment="Center"
-                   HorizontalAlignment="Center"
-                   TextWrapping="Wrap" />
 
+        <!-- SPLITTER -->
+        <!--<GridSplitter Grid.Row="3" HorizontalAlignment="Stretch" />-->
+
+        <!-- DEBUG STUFF -->
+        <!-- DECLARE BLOCK VIEWER -->
+        <!--<DataGrid Grid.Row="4" x:Name="declarationViewer">
+            
+        </DataGrid>-->
+        
     </Grid>
+    
 </Window>

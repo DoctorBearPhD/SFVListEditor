@@ -20,7 +20,13 @@
         <!-- Content Template -->
         <TabControl.ContentTemplate>
             <DataTemplate>
-                <DataGrid ItemsSource="{Binding Items}" HeadersVisibility="Column" CanUserSortColumns="False" />
+                <DataGrid ItemsSource="{Binding Items}" CanUserSortColumns="False" CanUserResizeRows="False" AlternationCount="1000" EnableRowVirtualization="False">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Id" 
+                                            Binding="{Binding RelativeSource={RelativeSource AncestorType=DataGridRow}, Path=(ItemsControl.AlternationIndex)}"
+                                            IsReadOnly="True" />
+                    </DataGrid.Columns>
+                </DataGrid>
             </DataTemplate>
         </TabControl.ContentTemplate>
         

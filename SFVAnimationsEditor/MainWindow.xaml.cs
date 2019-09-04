@@ -12,8 +12,7 @@ namespace SFVAnimationsEditor
     {
 #if DEBUG
         public const string TEMP_FILEPATH =
-            @"E:\Program Files (x86)\Fluffy's Mod Manager\Mod Tools\AnimationsEditor\DA_RYU_AnimSeqWithIdContainer.uasset";
-        // DA_RYU_AnimSeqWithIdContainer.uasset
+            @"DA_RYU_AnimSeqWithIdContainer.uasset";
 #endif
 
         public MainViewModel mainVM;
@@ -43,12 +42,13 @@ namespace SFVAnimationsEditor
 
             mainVM = new MainViewModel();
             DataContext = mainVM;
-            if (filePath != "") mainVM.FilePath = filePath;
+
+            if (filePath != "")
+                mainVM.FilePath = filePath;
+            else
+                Console.WriteLine("You must drag a \"DA_***_AnimSeqWithIdContainer.uasset\" onto SFVAnimationsEditor.exe to edit.");
+
             mainVM.ReadFile();
         }
-
-
-        // WPF Stuff
-
     }
 }

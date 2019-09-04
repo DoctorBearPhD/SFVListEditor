@@ -22,7 +22,7 @@ namespace SFVAnimationsEditor.Model
         public UkDepends UkDepends { get; set; }
         // public __?__ UkLoads { get; set; }
 
-        public Dictionary<string, object> ContentStructProperties { get; set; }
+        public StructProperty ContentStruct { get; set; }
 
         public long PtrFooter;
         public long PtrNoneString;
@@ -148,14 +148,12 @@ namespace SFVAnimationsEditor.Model
 
         public void ReadUassetContent(ref BinaryReader br)
         {
-            // TODO: Store content!
-
             Console.WriteLine("\nReading Main Content..." +
                              $"\n\tBinaryReader position: {br.BaseStream.Position} (0x{br.BaseStream.Position:X})");
 
             // Read Content struct
             
-            ContentStructProperties = ReadStruct(br);
+            ContentStruct = ReadStruct(br);
 
             Console.WriteLine($"\nFinished reading uasset!");
 
@@ -163,11 +161,6 @@ namespace SFVAnimationsEditor.Model
 
         public void WriteUasset(ref BinaryReader br, ref BinaryWriter bw)
         {
-            // Add any new strings to the String List!
-            ////UpdateStringList();
-
-            // Proceed to write the UAsset
-
             bw.Write(br.ReadBytes(LOC_PTR_CONTENT));
 
             // Skip this integer for now, the rest must be calculated first...
@@ -178,7 +171,7 @@ namespace SFVAnimationsEditor.Model
             bw.Write(br.ReadBytes(4)); // unknown bytes
 
             bw.Write(StringList.Count);
-            bw.Write(StringListPtr);
+            bw.Write(StringListPtr); // 0xA3
 
             bw.Write(UnknownList1.Count);
             var ptrLoc_UnknownList1 = (int)bw.BaseStream.Position; // store ptr location for now; write address when it's determined.
@@ -222,15 +215,15 @@ namespace SFVAnimationsEditor.Model
 
             WriteStringList(bw);
             WriteDeclaration(bw);
-            WriteUnknownList1(bw);
+            WriteUnknownList1Placeholder(bw);
             WriteImports(bw);
             WriteUkDepends(bw);
 
             // get pre-content data size, go to the pointer location, write it, and go back to where we were
-            var preContentSize = (int)bw.BaseStream.Position;
+            PreContentSize = (int)bw.BaseStream.Position;
             bw.Seek(LOC_PTR_CONTENT, 0);
-            bw.Write(preContentSize);
-            bw.Seek(preContentSize, 0);
+            bw.Write(PreContentSize);
+            bw.Seek(PreContentSize, 0);
 
             WriteUassetContent(ref br, ref bw);
 
@@ -240,6 +233,8 @@ namespace SFVAnimationsEditor.Model
             // store position as location of footer pointer
             PtrFooter = bw.BaseStream.Position;
 
+            // fill in UnknownList1
+            WriteUnknownList1(bw);
 
             // Write pointers to sections at their 'pointer locations'
             bw.Seek(ptrLoc_UnknownList1, 0);
@@ -268,17 +263,19 @@ namespace SFVAnimationsEditor.Model
 
         internal void WriteUassetContent(ref BinaryReader br, ref BinaryWriter bw)
         {
-            //TODO: TEMP!!!
+            #region Read and copy until footer bytes, write to file (TEMP)
+            //br.BaseStream.Seek(LOC_PTR_CONTENT, 0);
 
-            // Read and copy until footer bytes
-            br.BaseStream.Seek(LOC_PTR_CONTENT, 0);
-            
-            var readerContentPosition = br.ReadInt32();
-            br.BaseStream.Seek(readerContentPosition, 0);
+            //var readerContentPosition = br.ReadInt32();
+            //br.BaseStream.Seek(readerContentPosition, 0);
 
-            var contentBytes = br.ReadBytes((int)(br.BaseStream.Length - readerContentPosition - 8));
+            //var contentBytes = br.ReadBytes((int)(br.BaseStream.Length - readerContentPosition - 8));
 
-            bw.Write(contentBytes);
+            //bw.Write(contentBytes);
+            #endregion
+
+            // Write content
+            bw.Write(ContentStruct.GetBytes(StringList.Select(sl => sl.Value).ToList(), Declaration));
         }
         ////internal abstract void UpdateStringList();
 
@@ -307,13 +304,13 @@ namespace SFVAnimationsEditor.Model
 
         internal void ReadDeclaration(BinaryReader br, int count, int address)
         {
-            Declaration = new DeclarationBlock(count, address);
-            Console.WriteLine($"\nReading Declaration Block ({Declaration.Count} items): ");
+            Declaration = new DeclarationBlock();
+            Console.WriteLine($"\nReading Declaration Block ({count} items): ");
 
-            br.BaseStream.Seek(Declaration.Address, SeekOrigin.Begin);
+            br.BaseStream.Seek(address, SeekOrigin.Begin);
 
             DeclarationItem di;
-            for (var i = 0; i < Declaration.Count; i++)
+            for (var i = 0; i < count; i++)
             {
                 di = new DeclarationItem();
                 di.ReadItems(br, StringList);
@@ -326,7 +323,7 @@ namespace SFVAnimationsEditor.Model
                 Console.WriteLine(di.Depends != 0 ?
                                  $"\n\t    Dependency: {di.Depends} (0x{di.Depends:X})" : "");
 
-                Declaration.Items[i] = di;
+                Declaration.Items.Add(di);
             }
         }
 
@@ -340,7 +337,10 @@ namespace SFVAnimationsEditor.Model
                 Address = UnknownList1Ptr
             };
 
-            UnknownList1.ReadList(br, StringList);
+            UnknownList1.ReadList(br, StringList, Declaration);
+
+            if (UnknownList1.Items[0].PtrToContent != PreContentSize)
+                System.Diagnostics.Debug.WriteLine("UnknownList1 item content pointer didn't match.");
 
             Console.WriteLine("\nFinished reading Unknown List 1.\n");
         }
@@ -354,12 +354,11 @@ namespace SFVAnimationsEditor.Model
             var importsListCount = br.ReadInt32();
 
             Imports = new ImportBlock {
-                Address = ImportsListPtr,
-                Count = importsListCount
+                Address = ImportsListPtr
             };
 
             int val;
-            for (var i = 0; i < Imports.Count; i++)
+            for (var i = 0; i < importsListCount; i++)
             {
                 Imports.Items.Add(-br.ReadInt32() - 1);
                 val = Imports.Items[i];
@@ -407,9 +406,22 @@ namespace SFVAnimationsEditor.Model
             }
         }
 
+        internal void WriteUnknownList1Placeholder(BinaryWriter bw)
+        {
+            UnknownList1.Address = (int)bw.BaseStream.Position;
+
+            byte[] zeroBytes = BitConverter.GetBytes(0);
+            for (var i = 0; i < 17; i++)
+                bw.Write(zeroBytes);
+        }
+
         internal void WriteUnknownList1(BinaryWriter bw)
         {
-            UnknownList1.WriteList(bw, StringList);
+            UnknownList1.Items[0].PtrToContent = PreContentSize;
+            UnknownList1.Items[0].Size = (int)PtrFooter - PreContentSize;
+
+            bw.BaseStream.Seek(UnknownList1.Address, 0);
+            bw.Write(UnknownList1.GetBytes(StringList, Declaration));
         }
 
         internal void WriteImports(BinaryWriter bw)
@@ -475,13 +487,14 @@ namespace SFVAnimationsEditor.Model
             }
         }
 
-        internal Dictionary<string, object> ReadStruct(BinaryReader br)
+        internal StructProperty ReadStruct(BinaryReader br)
         {
-            var results = new Dictionary<string, object>();
+            var results = new StructProperty();
             while (true)
             {
                 Console.WriteLine("\nReading StructProperty...");
-                #region Get Attribute Name String Index
+                
+                #region Get Attribute Name (and its String Index)
 
                 var attr = ReadInt32AndZero(br);
                 var reference = StringList[attr].Value;
@@ -493,17 +506,17 @@ namespace SFVAnimationsEditor.Model
                 if (reference == "None")
                 {
                     // end of struct!
-                    Console.WriteLine("Encountered \"None\"! (end of array item) Breaking...");
+                    Console.WriteLine("Encountered \"None\"! (end of struct) Breaking...");
                     break; // break loop without adding a new item
                 }
 
-                if (reference == "StringAssetReference")
-                {
-                    results[reference] = ReadString(br);
-                    Console.WriteLine("Found StringAssetReference! (End of command list)"); // TODO: Finish this.
+                ////if (reference == "StringAssetReference")
+                ////{
+                ////    results.Value[reference] = ReadString(br);
+                ////    Console.WriteLine("Found StringAssetReference! (End of command list)"); // TODO: Finish this.
 
-                    return results;
-                }
+                ////    return results;
+                ////}
 
                 // if it's safe to read, show these
                 var propType = ReadInt32AndZero(br);
@@ -525,7 +538,7 @@ namespace SFVAnimationsEditor.Model
                 // Get Size (in bytes)
                 var size = ReadInt32AndZero(br);
 
-                results[reference] = readType.Invoke(br);
+                results.Value[reference] = readType.Invoke(br);
             }
 
             return results;
@@ -550,7 +563,7 @@ namespace SFVAnimationsEditor.Model
 
             arrayProp = new ArrayProperty
             {
-                PropertyType = propType,
+                PropertyType = StringList[propType].Value,
                 //Count = count,
                 Items = new ObservableCollection<dynamic>()
             };
@@ -694,7 +707,43 @@ namespace SFVAnimationsEditor.Model
 
     public abstract class UAssetProperty
     {
-        public abstract byte[] GetBytes();
+        public abstract byte[] GetBytes(IList<string> stringList = null, DeclarationBlock declare = null);
+    }
+
+    public class StructProperty : UAssetProperty
+    {
+        public Dictionary<string, object> Value { get; set; } = new Dictionary<string, object>();
+
+        public override byte[] GetBytes(IList<string> stringList, DeclarationBlock declare)
+        {
+            var resultBytes = new List<byte>();
+            string propType;
+            List<byte> valueBytes;
+
+            long size;
+            
+            for (var i = 0; i < Value.Count; i++)
+            {
+                resultBytes.AddRange(BitConverter.GetBytes((long)stringList.IndexOf(Value.ElementAt(i).Key))); // attr
+
+                if (Value.ElementAt(i).Value is StringProperty)
+                    propType = "StrProperty";
+                else
+                    propType = Value.ElementAt(i).Value.GetType().Name;
+
+                resultBytes.AddRange(BitConverter.GetBytes((long)stringList.IndexOf(propType))); // propType
+
+                valueBytes = new List<byte>(((UAssetProperty)Value.ElementAt(i).Value).GetBytes(stringList, declare));
+
+                size = valueBytes.Count - (propType == "ArrayProperty" ? 8 : 0); // size will be 8 bytes too high when calculating size of ArrayProperty (size - 8)
+                resultBytes.AddRange(BitConverter.GetBytes(size));
+                resultBytes.AddRange(valueBytes);
+            }
+
+            resultBytes.AddRange(BitConverter.GetBytes((long)stringList.IndexOf("None")));
+
+            return resultBytes.ToArray();
+        }
     }
 
     public class ArrayProperty : UAssetProperty
@@ -702,7 +751,7 @@ namespace SFVAnimationsEditor.Model
         /// <summary>
         /// The type of property that will be held.
         /// </summary>
-        public long PropertyType { get; set; }
+        public string PropertyType { get; set; }
         /// <summary>
         /// The number of items in the array.
         /// </summary>
@@ -713,25 +762,19 @@ namespace SFVAnimationsEditor.Model
         public ObservableCollection<dynamic> Items { get; set; } = new ObservableCollection<dynamic>();
 
 
-        public override byte[] GetBytes()
+        public override byte[] GetBytes(IList<string> stringList, DeclarationBlock declare)
         {
-            throw new NotImplementedException();
-        }
-
-        public byte[] GetBytes(long noneIndex)
-        {
+            long noneIndex = stringList.IndexOf("None");
             List<byte> resultBytes = new List<byte>();
             List<byte> itemsBytes   = new List<byte>();
 
             // call GetBytes() on each item
+
             for (var i = 0; i < Items.Count; i++)
-            {
-                itemsBytes.AddRange(((UAssetProperty)Items[i]).GetBytes());
-                itemsBytes.AddRange(BitConverter.GetBytes(noneIndex));
-            }
+                itemsBytes.AddRange(((UAssetProperty)Items[i]).GetBytes(stringList, declare));
 
             // add prop type
-            resultBytes.AddRange(BitConverter.GetBytes(PropertyType));
+            resultBytes.AddRange(BitConverter.GetBytes((long)stringList.IndexOf(PropertyType)));
             resultBytes.AddRange(BitConverter.GetBytes(Items.Count));
             resultBytes.AddRange(itemsBytes);
 
@@ -743,7 +786,7 @@ namespace SFVAnimationsEditor.Model
     {
         public ulong Value { get; set; }
 
-        public override byte[] GetBytes()
+        public override byte[] GetBytes(IList<string> stringList = null, DeclarationBlock declare = null)
         {
             throw new NotImplementedException();
         }
@@ -754,7 +797,7 @@ namespace SFVAnimationsEditor.Model
         public int Value { get; set; }
 
 
-        public override byte[] GetBytes()
+        public override byte[] GetBytes(IList<string> stringList = null, DeclarationBlock declare = null)
         {
             var resultBytes = new List<byte>();
             // get bytes of Value
@@ -774,7 +817,7 @@ namespace SFVAnimationsEditor.Model
         public int Id { get; set; }
 
 
-        public override byte[] GetBytes()
+        public override byte[] GetBytes(IList<string> stringList = null, DeclarationBlock declare = null)
         {
             var resultBytes = new List<byte>();
 
@@ -815,7 +858,7 @@ namespace SFVAnimationsEditor.Model
         }
     }
 
-    public class StringProperty : UAssetProperty
+    public class StringProperty : UAssetProperty, IComparable<StringProperty>
     {
         public string Value { get; set; } = "";
 
@@ -834,7 +877,7 @@ namespace SFVAnimationsEditor.Model
             Value = new string(value);
         }
 
-        public override byte[] GetBytes()
+        public override byte[] GetBytes(IList<string> stringList = null, DeclarationBlock declare = null)
         {
             var resultBytes = new List<byte>();
 
@@ -843,6 +886,16 @@ namespace SFVAnimationsEditor.Model
             resultBytes.Add(new byte());
 
             return resultBytes.ToArray();
+        }
+
+        public override string ToString()
+        {
+            return $"StringProperty: {Value}";
+        }
+
+        public int CompareTo(StringProperty other)
+        {
+            return String.Compare(Value, other.Value);
         }
     }
 
@@ -861,11 +914,16 @@ namespace SFVAnimationsEditor.Model
         }
 
 
-        public override byte[] GetBytes()
+        public override byte[] GetBytes(IList<string> stringList = null, DeclarationBlock declare = null)
         {
             // return id bytes, 
                 // TODO: ? - update the id if necessary? (Get index of Name from string list?)
             return BitConverter.GetBytes(-Id - 1);
+        }
+
+        public override string ToString()
+        {
+            return $"{Id} - \"{Name}\", " + base.ToString();
         }
     }
 
@@ -873,29 +931,29 @@ namespace SFVAnimationsEditor.Model
 
     public class DeclarationBlock
     {
-        public int Count;
+        public int Count => Items.Count;
         public int Address;
 
-        public DeclarationItem[] Items;
+        public List<DeclarationItem> Items { get; set; } = new List<DeclarationItem>();
 
 
-        public DeclarationBlock(int count, int address)
+        public DeclarationBlock() { }
+
+        public DeclarationBlock(int address)
         {
-            Count = count;
             Address = address;
-
-            Items = new DeclarationItem[Count];
         }
     }
 
     public class DeclarationItem
     {
-        public int    Id;
-        public string Namespace;
-        public string Type;
-        public string Name;
+        public int    Id { get; set; }
+        public string Namespace { get; set; }
+        public string Type { get; set; }
+        public string Name { get; set; }
 
-        public int    Depends;
+        public int    Depends { get; set; }
+        public int    Item6 { get; set; }
 
         public int[] Items = new int[7];
 
@@ -915,6 +973,26 @@ namespace SFVAnimationsEditor.Model
             Name      = stringList[Items[5]].Value;
 
             Depends = Items[4]; // ID of the Dependency (if any) of the item
+            Item6 = Items[6];
+
+            if (Items[1] != 0)
+                System.Diagnostics.Debug.WriteLine("Item 1 was not 0!" +
+                    $"\n\tItem Name was {Name}" +
+                    $"\n\tValue was {Items[1]} (0x{Items[1]:X})" +
+                    $"\n\tPossible value translations: " +
+                    $"\n\t\tString List: {(Items[1] < stringList.Count ? stringList[Items[1]].Value : "N/A")}");
+            if (Items[3] != 0)
+                System.Diagnostics.Debug.WriteLine("Item 3 was not 0!" +
+                    $"\n\tItem Name was {Name}" + 
+                    $"\n\tValue was {Items[3]} (0x{Items[3]:X})" +
+                    $"\n\tPossible value translations: " +
+                    $"\n\t\tString List: {(Items[3] < stringList.Count ? stringList[Items[3]].Value : "N/A")}");
+            if (Items[6] != 0)
+                System.Diagnostics.Debug.WriteLine("Item 6 was not 0!" +
+                    $"\n\tItem Name was {Name}" +
+                    $"\n\tValue was {Items[6]} (0x{Items[6]:X})" +
+                    $"\n\tPossible value translations: " +
+                    $"\n\t\tString List: {(Items[6] < stringList.Count ? stringList[Items[6]].Value : "N/A")}");
         }
 
         public void WriteItems(BinaryWriter bw, IList<string> stringList)
@@ -924,9 +1002,9 @@ namespace SFVAnimationsEditor.Model
              * 1 = zero
              * 2 = "type"           (e.g. - "Class")
              * 3 = zero
-             * 4 = "depends" id     (refers to ID of another item in the Declaration) (negative number, convert it to ID in the usual way?)
+             * 4 = "depends" id     (refers to ID of another item in the Declaration) (negative number, convert it to ID in the usual way)
              * 5 = "name"           (e.g. - "KWBattleCharaTrialDataAsset")
-             * 6 = zero             (in Trial_Vol1 uassets, this is "11" when the trial is not numbered [e.g. - TRIAL vs TRIAL_09])
+             * 6 = "version"? zero or original (in Trial_Vol1 uassets, this is "11" when the trial is not numbered [e.g. - TRIAL vs TRIAL_09])
              */
             bw.Write(stringList.IndexOf(Namespace));
             bw.Write(0);
@@ -934,7 +1012,7 @@ namespace SFVAnimationsEditor.Model
             bw.Write(0);
             bw.Write(Depends);
             bw.Write(stringList.IndexOf(Name));
-            bw.Write(Items[6]); 
+            bw.Write(Item6); 
         }
     }
 
@@ -945,7 +1023,7 @@ namespace SFVAnimationsEditor.Model
 
         public List<UnknownList1Item> Items = new List<UnknownList1Item>();
 
-        public void ReadList(BinaryReader br, IList<StringProperty> stringList)
+        public void ReadList(BinaryReader br, IList<StringProperty> stringList, DeclarationBlock declare)
         {
             if (br.BaseStream.Position != Address)
                 br.BaseStream.Seek(Address, 0);
@@ -955,21 +1033,23 @@ namespace SFVAnimationsEditor.Model
             {
                 var item = new UnknownList1Item();
 
-                item.ReadUnknownList1Item(br, stringList);
+                item.ReadUnknownList1Item(br, stringList, declare);
                 
                 Items.Add(item);
             }
         }
 
-        public void WriteList(BinaryWriter bw, IList<StringProperty> stringList)
+        public byte[] GetBytes(IList<StringProperty> stringList, DeclarationBlock declare)
         {
-            Address = (int)bw.BaseStream.Position;
+            var resultBytes = new List<byte>();
             
             // Write list of list of ints
             for (var i = 0; i < Count; i++)
             {
-                Items[i].WriteUnknownList1Item(bw, stringList);
+                resultBytes.AddRange(Items[i].GetBytes(stringList, declare));
             }
+
+            return resultBytes.ToArray();
         }
     }
 
@@ -977,67 +1057,78 @@ namespace SFVAnimationsEditor.Model
     {
         public const int ITEM_COUNT = 17;
 
-        public int Id;
-        public string Name;
-        public string Namespace;
+        public int Id; // declare block id
+        public string IdValue;
+        public string Name; // string list id
+        public string Namespace; // ? NOT NAMESPACE!
         public int Size;
         public int PtrToContent;
 
         public List<int> Items = new List<int>(ITEM_COUNT);
 
 
-        public void ReadUnknownList1Item(BinaryReader br, IList<StringProperty> stringList)
+        public void ReadUnknownList1Item(BinaryReader br, IList<StringProperty> stringList, DeclarationBlock declare)
         {
             for (var i = 0; i < ITEM_COUNT; i++)
                 Items.Add(br.ReadInt32());
 
             // 0 3 5 6 7 16
             Id = -Items[0] - 1;
+            IdValue = declare.Items.Find(item => item.Id == Id).Name;
             Name = stringList[Items[3]].Value;
             Namespace = stringList[Items[5]].Value;
             Size = Items[6];
             PtrToContent = Items[7];
 
-            Console.WriteLine($"\tId:\t{Id}\n" +
+            Console.WriteLine($"\tId:\t{Id} ({IdValue})\n" +
                 $"\tName:\t{Name}\n" +
-                $"\tNamespace:\t{Namespace}\n" +
+                $"\tNamespace(?):\t{Namespace}   (value = 0x{Items[5]:X})\n" +
                 $"\tSize:\t{Size}\n" +
                 $"\tPointer To Content:  @{PtrToContent:X}");
         }
 
-        public void WriteUnknownList1Item(BinaryWriter bw, IList<StringProperty> stringList)
+        public byte[] GetBytes(IList<StringProperty> stringList, DeclarationBlock declare)
         {
+            var resultBytes = new List<byte>();
+            // get the new id references
+            // id of name
+
             for (var i = 0; i < Items.Count; i++)
             {
                 switch (i)
                 {
                     case 0:
-                        bw.Write(-Id - 1);
+                        resultBytes.AddRange(BitConverter.GetBytes(
+                            declare.Items.FindIndex(item => item.Name == IdValue) * -1 - 1));
                         break;
                     case 3:
-                        bw.Write(stringList.IndexOf(stringList.Where(s => s.Value == Name).First()));
+                        resultBytes.AddRange(BitConverter.GetBytes(
+                            stringList.IndexOf(stringList.Where(s => s.Value == Name).First())));
                         break;
                     case 5:
-                        bw.Write(stringList.IndexOf(stringList.Where(s => s.Value == Namespace).First()));
+                        resultBytes.AddRange(BitConverter.GetBytes(Items[i])); // This number is not the namespace, so we'll leave it alone...
+                            //stringList.IndexOf(stringList.Where(s => s.Value == Namespace).First())));
                         break;
                     case 6:
-                        bw.Write(Size);
+                        resultBytes.AddRange(BitConverter.GetBytes(Size));
                         break;
                     case 7:
-                        bw.Write(PtrToContent);
+                        resultBytes.AddRange(BitConverter.GetBytes(PtrToContent));
                         break;
                     case 16:
                     default:
-                        bw.Write(Items[i]);
+                        resultBytes.AddRange(BitConverter.GetBytes(Items[i]));
                         break;
                 }
             }
+
+            return resultBytes.ToArray();
         }
     }
 
     public class ImportBlock
     {
-        public int Count;
+        public int Count => Items.Count;
         public long Address;
 
         public List<int> Items = new List<int>();
