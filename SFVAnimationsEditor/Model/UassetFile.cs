@@ -975,24 +975,24 @@ namespace SFVAnimationsEditor.Model
             Depends = Items[4]; // ID of the Dependency (if any) of the item
             Item6 = Items[6];
 
-            if (Items[1] != 0)
-                System.Diagnostics.Debug.WriteLine("Item 1 was not 0!" +
-                    $"\n\tItem Name was {Name}" +
-                    $"\n\tValue was {Items[1]} (0x{Items[1]:X})" +
-                    $"\n\tPossible value translations: " +
-                    $"\n\t\tString List: {(Items[1] < stringList.Count ? stringList[Items[1]].Value : "N/A")}");
-            if (Items[3] != 0)
-                System.Diagnostics.Debug.WriteLine("Item 3 was not 0!" +
-                    $"\n\tItem Name was {Name}" + 
-                    $"\n\tValue was {Items[3]} (0x{Items[3]:X})" +
-                    $"\n\tPossible value translations: " +
-                    $"\n\t\tString List: {(Items[3] < stringList.Count ? stringList[Items[3]].Value : "N/A")}");
-            if (Items[6] != 0)
-                System.Diagnostics.Debug.WriteLine("Item 6 was not 0!" +
-                    $"\n\tItem Name was {Name}" +
-                    $"\n\tValue was {Items[6]} (0x{Items[6]:X})" +
-                    $"\n\tPossible value translations: " +
-                    $"\n\t\tString List: {(Items[6] < stringList.Count ? stringList[Items[6]].Value : "N/A")}");
+            ////if (Items[1] != 0)
+            ////    System.Diagnostics.Debug.WriteLine("Item 1 was not 0!" +
+            ////        $"\n\tItem Name was {Name}" +
+            ////        $"\n\tValue was {Items[1]} (0x{Items[1]:X})" +
+            ////        $"\n\tPossible value translations: " +
+            ////        $"\n\t\tString List: {(Items[1] < stringList.Count ? stringList[Items[1]].Value : "N/A")}");
+            ////if (Items[3] != 0)
+            ////    System.Diagnostics.Debug.WriteLine("Item 3 was not 0!" +
+            ////        $"\n\tItem Name was {Name}" + 
+            ////        $"\n\tValue was {Items[3]} (0x{Items[3]:X})" +
+            ////        $"\n\tPossible value translations: " +
+            ////        $"\n\t\tString List: {(Items[3] < stringList.Count ? stringList[Items[3]].Value : "N/A")}");
+            ////if (Items[6] != 0)
+            ////    System.Diagnostics.Debug.WriteLine("Item 6 was not 0!" +
+            ////        $"\n\tItem Name was {Name}" +
+            ////        $"\n\tValue was {Items[6]} (0x{Items[6]:X})" +
+            ////        $"\n\tPossible value translations: " +
+            ////        $"\n\t\tString List: {(Items[6] < stringList.Count ? stringList[Items[6]].Value : "N/A")}");
         }
 
         public void WriteItems(BinaryWriter bw, IList<string> stringList)

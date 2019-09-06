@@ -15,5 +15,11 @@ namespace SFVAnimationsEditor
         {
             InitializeComponent();
         }
+
+        private void DataGrid_InitializingNewItem(object sender, InitializingNewItemEventArgs e)
+        {
+            if (e.NewItem is ViewModel.AnimationListItem item)
+                item.UpdateIndex(((DataGrid)sender).Items.Count - 2);
+        }
     }
 }

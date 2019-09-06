@@ -49,6 +49,7 @@ namespace SFVAnimationsEditor.ViewModel
             AnimSeqLists = new ObservableCollection<AnimationList>();
             
             AnimationList animSeqListVm;
+            AnimationListItem animItemVm;
             ObjectProperty item;
 
             DeclarationItem declareItem;
@@ -81,7 +82,8 @@ namespace SFVAnimationsEditor.ViewModel
                     // if it's null, add a blank item and continue
                     if (item.Id == -1)
                     {
-                        animSeqListVm.Items.Add(new AnimationListItem("", ""));
+                        animItemVm = new AnimationListItem(j, "", "");
+                        animSeqListVm.Items.Add(animItemVm);
                         continue;
                     }
 
@@ -117,8 +119,9 @@ namespace SFVAnimationsEditor.ViewModel
 
                     // add strings to Animation Strings List (List of Modifiable Strings, for later)
                     AnimationStrings.AddRange(new StringProperty[] { new StringProperty(animName), new StringProperty(animPath) });
-                    // add Items to AnimationList
-                    animSeqListVm.Items.Add(new AnimationListItem(animName, animPath, animItem6));
+                    // add Item to AnimationList
+                    animItemVm = new AnimationListItem(j, animName, animPath, animItem6);
+                    animSeqListVm.Items.Add(animItemVm);
                 }
 
                 // add AnimationList to Container
@@ -199,12 +202,20 @@ namespace SFVAnimationsEditor.ViewModel
 
         public AnimationList() { }
         public AnimationList(IList<AnimationListItem> items) { Items = items; }
+
+        public void UpdateIndices()
+        {
+            for (var i = 0; i < Items.Count; i++)
+                Items[i].UpdateIndex(i);
+        }
     }
 
     public class AnimationListItem
     {
-        // name -- dependency -> path
+        // name -- dependency is path
         // path
+
+        public int Index { get; private set; } = -1;
 
         public string Name { get; set; }
         public string Path { get; set; }
@@ -222,6 +233,16 @@ namespace SFVAnimationsEditor.ViewModel
             Name = name;
             Path = path;
             Item6 = item6;
+        }
+
+        public AnimationListItem(int index, string name, string path, int item6 = 0) : this(name, path, item6)
+        {
+            Index = index;
+        }
+
+        public void UpdateIndex(int index)
+        {
+            Index = index;
         }
     }
 

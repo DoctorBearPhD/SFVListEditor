@@ -197,8 +197,14 @@ namespace SFVAnimationsEditor.ViewModel
                 Console.WriteLine($"\n({DateTime.Now}) Save complete.");
 
                 // delete temp file
-                br.Dispose(); // release resources used by reader so the temp file can be deleted
-                File.Delete(tempName);
+                br.Dispose(); // release resources used by reader so the temp file can be deleted/renamed
+                if (FilePath != saveDialog.FileName)
+                    File.Move(tempName, FilePath); // rename tmp back to original if it wasn't overwritten
+                else
+                {
+                    File.Delete(tempName); // delete tmp if original was overwritten
+                    FilePath = saveDialog.FileName;
+                }
             }
             catch (Exception)
             {
