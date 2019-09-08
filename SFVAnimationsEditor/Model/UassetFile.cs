@@ -431,13 +431,8 @@ namespace SFVAnimationsEditor.Model
             bw.Write(Imports.Count);
             for (var i = 0; i < Imports.Count; i++)
             {
-                //if (Imports.Items[i] == 0) {
-                //    bw.Write(0);
-                //    continue;
-                //}
-
                 var importId = -Imports.Items[i] - 1;
-                bw.Write(importId); // TODO: Derive this value.
+                bw.Write(importId);
             }
         }
 
@@ -525,7 +520,7 @@ namespace SFVAnimationsEditor.Model
                 Console.WriteLine("\tSize: {0} bytes", (StringList[propType].Value == "ByteProperty") ? $"{previewSize} or {previewSize*2}" : previewSize.ToString());
 
                 if (previewSize == 0) { continue; }
-                RollBack(br, 2, true);
+                RollBack(br, 4, true);
 
                 // Get Property Type
                 var readType = ReadPropertyType(br);
@@ -551,15 +546,16 @@ namespace SFVAnimationsEditor.Model
             ArrayProperty arrayProp;
 
             var propType = ReadInt32AndZero(br); // preview property type
+            var count = br.ReadInt32();
 
             Console.WriteLine($"\tProperty Type: \"{StringList[propType].Value}\" (0x{propType:X2} = {propType})");
-            Console.WriteLine($"\tNumber of Items: {br.PeekChar()}");
-
-            RollBack(br, 1, true); // go back to where we should be
+            Console.WriteLine($"\tNumber of Items: {count}"); // can't use PeekChar() because it crashes in some cases :(
+            
+            RollBack(br, 3, true); // go back to where we should be
 
             var readType = ReadPropertyType(br);
 
-            var count = br.ReadInt32();
+            RollBack(br, -1, true); // skip, because we already have `count`
 
             arrayProp = new ArrayProperty
             {
@@ -697,9 +693,15 @@ namespace SFVAnimationsEditor.Model
             return i;
         }
 
-        public void RollBack(BinaryReader br, int times = 1, bool silent = false)
+        /// <summary>
+        /// Roll back, 4 bytes at a time. Can specify how many times.
+        /// </summary>
+        /// <param name="br">The binary reader</param>
+        /// <param name="times">Number of times to roll back by 4 bytes (it's actually done all at once)</param>
+        /// <param name="silent">When true, WILL NOT output a confirmation to the console.</param>
+        public void RollBack(BinaryReader br, int times = 2, bool silent = false)
         {
-            br.BaseStream.Seek(-8 * times, SeekOrigin.Current);
+            br.BaseStream.Seek(-4 * times, SeekOrigin.Current);
             if (!silent) Console.WriteLine($"Rolled back! Now at position 0x{br.BaseStream.Position:X}");
         }
     }

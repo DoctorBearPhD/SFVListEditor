@@ -23,7 +23,7 @@ namespace SFVAnimationsEditor.ViewModel
         private const string ANIMATION_NAME_NAMESPACE = "/Script/Engine";
         private const string ANIMATION_PATH_NAMESPACE = "/Script/CoreUObject";
 
-        private readonly IDataService _dataService;
+        ////private readonly IDataService _dataService;
 
         public string FilePath = "";
 
@@ -97,16 +97,16 @@ namespace SFVAnimationsEditor.ViewModel
         /// </summary>
         public MainViewModel(IDataService dataService = null)
         {
-            _dataService = dataService;
-            //_dataService.GetData(
-            //    (item, error) =>
-            //    {
-            //        if (error != null)
-            //        {
-            //            // Report error here
-            //            return;
-            //        }
-            //    });
+            ////_dataService = dataService;
+            ////_dataService.GetData(
+            ////    (item, error) =>
+            ////    {
+            ////        if (error != null)
+            ////        {
+            ////            // Report error here
+            ////            return;
+            ////        }
+            ////    });
 
             AnimationsEditor = SimpleIoc.Default.GetInstance<AnimationsEditorViewModel>();
             //StringEditor = SimpleIoc.Default.GetInstance<StringEditorViewModel>();

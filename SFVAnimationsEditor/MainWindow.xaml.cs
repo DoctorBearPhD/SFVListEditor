@@ -11,8 +11,10 @@ namespace SFVAnimationsEditor
     public partial class MainWindow : Window
     {
 #if DEBUG
-        public const string TEMP_FILEPATH = 
-            "";
+        public string executableLocation = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+
+        public string TEMP_FILEPATH =>
+            executableLocation + "/originals/DA_NCL_AnimSeqWithIdContainer.uasset";
         //    @"DA_RYU_AnimSeqWithIdContainer.uasset";
 #endif
 
