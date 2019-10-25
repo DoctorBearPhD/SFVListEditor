@@ -39,6 +39,7 @@ namespace SFVAnimationsEditor.ViewModel
             }
 
             SimpleIoc.Default.Register<AnimationsEditorViewModel>();
+            SimpleIoc.Default.Register<VfxEditorViewModel>();
             SimpleIoc.Default.Register<StringEditorViewModel>();
             SimpleIoc.Default.Register<MainViewModel>();
         }
@@ -66,6 +67,14 @@ namespace SFVAnimationsEditor.ViewModel
             "CA1822:MarkMembersAsStatic",
             Justification = "This non-static member is needed for data binding purposes.")]
         public AnimationsEditorViewModel AnimationsEditor => ServiceLocator.Current.GetInstance<AnimationsEditorViewModel>();
+        
+        /// <summary>
+        /// Gets the VfxEditor property.
+        /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance",
+            "CA1822:MarkMembersAsStatic",
+            Justification = "This non-static member is needed for data binding purposes.")]
+        public VfxEditorViewModel VfxEditor => ServiceLocator.Current.GetInstance<VfxEditorViewModel>();
 
 
         /// <summary>

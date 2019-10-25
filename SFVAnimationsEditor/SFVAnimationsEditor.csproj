@@ -8,7 +8,7 @@
     <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>SFVAnimationsEditor</RootNamespace>
-    <AssemblyName>SFVAnimationsEditor</AssemblyName>
+    <AssemblyName>SFVListEditor</AssemblyName>
     <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -84,12 +84,17 @@
     <Compile Include="Model\DataService.cs" />
     <Compile Include="Model\IDataService.cs" />
     <Compile Include="Model\UassetFile.cs" />
+    <Compile Include="VfxEditorView.xaml.cs">
+      <DependentUpon>VfxEditorView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="ViewModel\AnimationsEditorViewModel.cs" />
+    <Compile Include="ViewModel\BaseEditorViewModel.cs" />
     <Compile Include="ViewModel\MainViewModel.cs" />
     <Compile Include="StringEditorView.xaml.cs">
       <DependentUpon>StringEditorView.xaml</DependentUpon>
     </Compile>
     <Compile Include="ViewModel\StringEditorViewModel.cs" />
+    <Compile Include="ViewModel\VfxEditorViewModel.cs" />
     <Compile Include="ViewModel\ViewModelLocator.cs" />
     <Compile Include="WpfUtil\OutputWriter.cs" />
     <Page Include="AnimationsEditorView.xaml">
@@ -117,6 +122,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="StringEditorView.xaml">
+      <SubType>Form</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="VfxEditorView.xaml">
       <SubType>Form</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

@@ -4,11 +4,12 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SFVAnimationsEditor"
+        xmlns:vm ="clr-namespace:SFVAnimationsEditor.ViewModel"
         xmlns:ignore="http://www.galasoft.ch/ignore"
         mc:Ignorable="d ignore"
         Height="800"
         Width="800"
-        Title="Animations Editor"
+        Title="SFV List Editor"
         DataContext="{Binding Main, Source={StaticResource Locator}}">
     
     <Window.Resources>
@@ -20,14 +21,16 @@
     </Window.Resources>
 
     <Window.InputBindings>
+        <KeyBinding Modifiers="Ctrl" Key="O" Command="{Binding OpenFileCommand}"/>
         <KeyBinding Modifiers="Ctrl" Key="S" Command="{Binding SaveAsCommand}"/>
     </Window.InputBindings>
 
     <DockPanel>
         <Menu DockPanel.Dock="Top">
             <MenuItem Header="_File">
-                <MenuItem Header="_Open" Command="{Binding OpenFileCommand}" />
-                <MenuItem Header="_Save As..." Command="{Binding SaveAsCommand}"/>
+                <MenuItem Header="_Open" InputGestureText="Ctrl + O" Command="{Binding OpenFileCommand}" />
+                <MenuItem Header="_Save As..." InputGestureText="Ctrl + S" Command="{Binding SaveAsCommand}"/>
+                <MenuItem Header="Exit" InputGestureText="Alt + F4" Command="{Binding ExitCommand}" />
             </MenuItem>
         </Menu>
         
@@ -37,29 +40,43 @@
                 <RowDefinition Height="2*"/>
                 <RowDefinition Height="10"/>
                 <RowDefinition />
-                <!--<RowDefinition Height="10"/>
-                <RowDefinition />-->
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
-            <!-- ANIMATION LIST EDITOR -->
-            <local:AnimationsEditorView Grid.Row="0" />
+            <ContentControl Content="{Binding CurrentEditor}" Grid.Row="0">
+                <ContentControl.Resources>
+                    
+                    <!-- ANIMATION LIST EDITOR -->
+                    <DataTemplate DataType="{x:Type vm:AnimationsEditorViewModel}">
+                        <local:AnimationsEditorView DataContext="{Binding}" />
+                    </DataTemplate>
 
+                    <!-- VFX LIST EDITOR -->
+                    <DataTemplate DataType="{x:Type vm:VfxEditorViewModel}">
+                        <local:VfxEditorView DataContext="{Binding}" />
+                    </DataTemplate>
+                    
+                </ContentControl.Resources>
+            </ContentControl>
             <!-- SPLITTER -->
             <GridSplitter Grid.Row="1" HorizontalAlignment="Stretch" />
 
             <!-- CONSOLE -->
             <TextBox Name="tbOutput" Grid.Row="2" MinHeight="200"
-                         FontFamily="Consolas"
-                         Background="{StaticResource SCB_Sidebar_Background}" Foreground="LightGray" BorderBrush="{x:Null}" 
-                         AcceptsReturn="True" VerticalScrollBarVisibility="Auto" IsReadOnlyCaretVisible="True" IsReadOnly="True" TextWrapping="Wrap" />
+                     FontFamily="Consolas"
+                     Background="{StaticResource SCB_Sidebar_Background}" Foreground="LightGray" BorderBrush="{x:Null}" 
+                     AcceptsReturn="True" VerticalScrollBarVisibility="Auto" 
+                     IsReadOnlyCaretVisible="True" IsReadOnly="True" TextWrapping="Wrap" />
 
             <!-- DEBUG STUFF -->
             
             <!-- SPLITTER -->
-            <!--<GridSplitter Grid.Row="3" HorizontalAlignment="Stretch" />-->
+            <GridSplitter Grid.Row="3" HorizontalAlignment="Stretch" Height="10" x:Name="declarationSplitter" Visibility="Collapsed" />
 
             <!-- DECLARE BLOCK VIEWER -->
-            <!--<DataGrid Grid.Row="4" x:Name="declarationViewer" />-->
+            <DataGrid Grid.Row="4" x:Name="declarationViewer" 
+                      IsReadOnly="True" CanUserSortColumns="False" Visibility="Collapsed" />
 
         </Grid>
     </DockPanel>

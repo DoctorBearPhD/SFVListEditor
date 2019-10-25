@@ -13,11 +13,17 @@ namespace SFVAnimationsEditor.ViewModel
     /// See http://www.mvvmlight.net
     /// </para>
     /// </summary>
-    public class AnimationsEditorViewModel : ViewModelBase
+    public class AnimationsEditorViewModel : BaseEditorViewModel
     {
         public const string CONTAINER_KEY = "AnimSeqWithIdListContainer";
         public const string CATEGORY_KEY  = "Description";
         public const string ARRAY_KEY     = "AnimSeqList";
+
+        public override string ITEM_NAME_TYPE => "AnimSequence";
+        public override string ITEM_PATH_TYPE => "Package";
+        public override string ITEM_NAME_NAMESPACE => "/Script/Engine";
+        public override string ITEM_PATH_NAMESPACE => "/Script/CoreUObject";
+
 
         private ObservableCollection<AnimationList> _AnimSeqLists;
         public ObservableCollection<AnimationList> AnimSeqLists // (Tabs)
@@ -28,23 +34,14 @@ namespace SFVAnimationsEditor.ViewModel
 
         public List<StringProperty> AnimationStrings;
 
-        /// <summary>
-        /// Initializes a new instance of the AnimationsEditorViewModel class.
-        /// </summary>
-        public AnimationsEditorViewModel()
-        {
-            AnimSeqLists = new ObservableCollection<AnimationList>();
-            AnimationStrings = new List<StringProperty>();
-        }
-
 
         public void GetAnimationList(StructProperty content, DeclarationBlock declare)
         {
-            if (!content.Value.ContainsKey(CONTAINER_KEY))
-            {
-                Console.WriteLine("WARNING!!! - No readable content found! (Is this an AnimSeqWithIdList UAsset file?)");
-                return;
-            }
+            ////if (!content.Value.ContainsKey(CONTAINER_KEY))
+            ////{
+            ////    Console.WriteLine("WARNING!!! - No readable content found! (Is this an AnimSeqWithIdList UAsset file?)");
+            ////    return;
+            ////}
 
             AnimSeqLists = new ObservableCollection<AnimationList>();
             
@@ -69,7 +66,7 @@ namespace SFVAnimationsEditor.ViewModel
                 animSeqListVm = new AnimationList
                 {
                     Header = animContainer.Items[i].Value[CATEGORY_KEY],
-                    Items = new List<AnimationListItem>()
+                    Items = new ObservableCollection<AnimationListItem>()
                 };
 
                 var animSeqListItemsArrayProperty = (ArrayProperty)animContainer.Items[i].Value[ARRAY_KEY];
@@ -128,8 +125,8 @@ namespace SFVAnimationsEditor.ViewModel
                 AnimSeqLists.Add(animSeqListVm);
             }
         }
-
-        public IList<StringProperty> GetAnimationStrings()
+        
+        public override IList<StringProperty> GetStrings()
         {
             var result = new List<StringProperty>();
             AnimationListItem item;
@@ -151,7 +148,7 @@ namespace SFVAnimationsEditor.ViewModel
             return result;
         }
 
-        public StructProperty GetModifiedContent(DeclarationBlock declare)
+        public override StructProperty GetModifiedContent(DeclarationBlock declare)
         {
             var contentStruct = new StructProperty();
             var animContainer = new ArrayProperty() { PropertyType = "StructProperty" };
@@ -193,15 +190,114 @@ namespace SFVAnimationsEditor.ViewModel
 
             return contentStruct;
         }
+
+        internal override IList<DeclarationItem> GetModifiablePathDeclarationItems()
+        {
+            DeclarationBlock modifiablePathsDeclareBlock = new DeclarationBlock();
+            DeclarationItem path;
+
+            // Get all modifiable path items
+            foreach (var animSeqList in AnimSeqLists)
+            {
+                foreach (var animItem in animSeqList.Items)
+                {
+                    if (animItem.Name == "" || animItem.Path == "")
+                        continue;
+
+                    // add declaration items for each path
+
+                    //animItem.Path;
+                    path = new DeclarationItem()
+                    {
+                        Name = animItem.Path,
+                        Namespace = ITEM_PATH_NAMESPACE,
+                        Type = ITEM_PATH_TYPE,
+                        Item6 = animItem.Item6
+                    };
+
+                    modifiablePathsDeclareBlock.Items.Add(path);
+                }
+            }
+
+            return modifiablePathsDeclareBlock.Items;
+        }
+
+        internal override IList<DeclarationItem> GetNameDeclarationItems(DeclarationBlock pathsDeclareBlock)
+        {
+            var modifiedDeclareBlock = new DeclarationBlock();
+
+            DeclarationItem animNameDeclareItem; // declaration item representing the animation name
+            AnimationListItem animationItem;     // vm form of the ^
+            bool foundItemName;
+
+            for (var i = 0; i < pathsDeclareBlock.Count; i++)
+            {
+                foundItemName = false;
+
+                foreach (var animSeqList in AnimSeqLists)
+                {
+                    animationItem = animSeqList.Items
+                        .FirstOrDefault(item => item.Path == pathsDeclareBlock.Items[i].Name && item.Item6 == pathsDeclareBlock.Items[i].Item6);
+
+                    if (animationItem?.Name == null)
+                        continue;
+
+                    //animationItem.Name;
+                    animNameDeclareItem = new DeclarationItem()
+                    {
+                        Name = animationItem.Name,
+                        Namespace = ITEM_NAME_NAMESPACE,
+                        Type = ITEM_NAME_TYPE,
+                        Item6 = animationItem.Item6
+                    };
+
+                    modifiedDeclareBlock.Items.Add(animNameDeclareItem);
+                    foundItemName = true;
+                    break;
+                }
+
+                if (foundItemName)
+                    continue;
+            }
+
+            return modifiedDeclareBlock.Items;
+        }
+
+        internal override void UpdateDepends(ref DeclarationBlock modifiedDeclareBlock)
+        {
+            DeclarationItem pathItem;
+
+            foreach (var animSeqList in AnimSeqLists)
+            {
+                foreach (var animItem in animSeqList.Items)
+                {
+                    if (animItem.Name == "" || animItem.Path == "")
+                        continue;
+
+                    pathItem = modifiedDeclareBlock.Items
+                        .Find(item => item.Name == animItem.Path && item.Item6 == animItem.Item6); // find animation path in declaration
+
+                    modifiedDeclareBlock.Items
+                        .Find(item => item.Name == animItem.Name && item.Item6 == pathItem.Item6) // find animation name in declaration 
+                        .Depends = -pathItem.Id - 1; // and set dependency
+                }
+            }
+        }
+
+        public override void Initialize()
+        {
+            AnimSeqLists = new ObservableCollection<AnimationList>();
+            AnimationStrings = new List<StringProperty>();
+        }
     }
 
     public class AnimationList
     {
         public string Header { get; set; } // (Tab Item)
-        public IList<AnimationListItem> Items { get; set; } // (Tab Content)
+        public ObservableCollection<AnimationListItem> Items { get; set; } // (Tab Content)
 
         public AnimationList() { }
-        public AnimationList(IList<AnimationListItem> items) { Items = items; }
+        public AnimationList(ObservableCollection<AnimationListItem> items) { Items = items; }
 
         public void UpdateIndices()
         {

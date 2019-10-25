@@ -5,7 +5,6 @@ using System.IO;
 using System.Linq;
 
 // TODO: Doesn't read information that comes after the main content. (charaName, etc in CommandList) - "uk_loads"?
-// TODO: Update Pointer to footer and anything else that might not have been updated
 namespace SFVAnimationsEditor.Model
 {
     public class UassetFile
