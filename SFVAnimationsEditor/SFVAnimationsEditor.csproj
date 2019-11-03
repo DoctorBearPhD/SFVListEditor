@@ -83,12 +83,15 @@
     <Compile Include="Model\DataItem.cs" />
     <Compile Include="Model\DataService.cs" />
     <Compile Include="Model\IDataService.cs" />
+    <Compile Include="Model\Lists\ListItem.cs" />
     <Compile Include="Model\UassetFile.cs" />
     <Compile Include="VfxEditorView.xaml.cs">
       <DependentUpon>VfxEditorView.xaml</DependentUpon>
     </Compile>
     <Compile Include="ViewModel\AnimationsEditorViewModel.cs" />
     <Compile Include="ViewModel\BaseEditorViewModel.cs" />
+    <Compile Include="ViewModel\Lists\AnimationListVm.cs" />
+    <Compile Include="ViewModel\Lists\ListVm.cs" />
     <Compile Include="ViewModel\MainViewModel.cs" />
     <Compile Include="StringEditorView.xaml.cs">
       <DependentUpon>StringEditorView.xaml</DependentUpon>

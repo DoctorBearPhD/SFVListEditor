@@ -249,7 +249,16 @@ namespace SFVAnimationsEditor.ViewModel
                 // make temp file
                 fileInfo = new FileInfo(FilePath);
                 var tempName = fileInfo.FullName + ".tmp";
-                File.Move(fileInfo.FullName, tempName); // NOTE: will crash if .tmp file already exists
+
+                // delete any accidentally leftover temp file
+                if (File.Exists(tempName))
+                {
+                    if (File.GetAttributes(tempName) != FileAttributes.Temporary)
+                        File.SetAttributes(tempName, FileAttributes.Temporary);
+                    File.Delete(tempName);
+                }
+                File.Move(fileInfo.FullName, tempName);
+                File.SetAttributes(tempName, FileAttributes.Temporary);
 
                 // save
                 var br = new BinaryReader(File.OpenRead(tempName));
@@ -301,7 +310,26 @@ namespace SFVAnimationsEditor.ViewModel
             ((System.Windows.Controls.TextBox)App.Current.MainWindow.FindName("tbOutput"))?.Clear();
 
             // make backup
-            File.Copy(FilePath, FilePath + ".bak", true);
+            try
+            {
+                /* NOTE: Using try/catch and setting file attributes because 
+                 *  UnauthorizedAccessException can happen when using shared files.
+                 */
+                var bakFilePath = FilePath + ".bak";
+
+                if (File.Exists(bakFilePath) && File.GetAttributes(bakFilePath) != FileAttributes.Normal)
+                    File.SetAttributes(bakFilePath, FileAttributes.Normal);
+
+                File.Copy(FilePath, bakFilePath, true);
+                File.SetAttributes(bakFilePath, FileAttributes.Normal);
+            }
+            catch (Exception e)
+            {
+                MessengerInstance.Send(
+                    token: "ERROR MESSAGE", 
+                    message: new GalaSoft.MvvmLight.Messaging.NotificationMessage(e.Message)
+                );
+            }
 
             // restart main viewmodel
             ReadFile();

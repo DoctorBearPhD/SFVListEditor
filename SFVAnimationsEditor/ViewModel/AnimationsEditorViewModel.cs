@@ -1,5 +1,7 @@
 ﻿using GalaSoft.MvvmLight;
 using SFVAnimationsEditor.Model;
+using SFVAnimationsEditor.Model.Lists;
+using SFVAnimationsEditor.ViewModel.Lists;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -25,8 +27,8 @@ namespace SFVAnimationsEditor.ViewModel
         public override string ITEM_PATH_NAMESPACE => "/Script/CoreUObject";
 
 
-        private ObservableCollection<AnimationList> _AnimSeqLists;
-        public ObservableCollection<AnimationList> AnimSeqLists // (Tabs)
+        private ObservableCollection<AnimationListVm> _AnimSeqLists;
+        public ObservableCollection<AnimationListVm> AnimSeqLists // (Tabs)
         {
             get => _AnimSeqLists;
             set => Set(ref _AnimSeqLists, value);
@@ -43,10 +45,10 @@ namespace SFVAnimationsEditor.ViewModel
             ////    return;
             ////}
 
-            AnimSeqLists = new ObservableCollection<AnimationList>();
+            AnimSeqLists = new ObservableCollection<AnimationListVm>();
             
-            AnimationList animSeqListVm;
-            AnimationListItem animItemVm;
+            AnimationListVm animSeqListVm;
+            ListItem animItemVm;
             ObjectProperty item;
 
             DeclarationItem declareItem;
@@ -63,10 +65,10 @@ namespace SFVAnimationsEditor.ViewModel
             // iterate through AnimSeqListWithIdContainer
             for (var i = 0; i < animContainer.Count; i++)
             {
-                animSeqListVm = new AnimationList
+                animSeqListVm = new AnimationListVm
                 {
                     Header = animContainer.Items[i].Value[CATEGORY_KEY],
-                    Items = new ObservableCollection<AnimationListItem>()
+                    Items = new ObservableCollection<ListItem>()
                 };
 
                 var animSeqListItemsArrayProperty = (ArrayProperty)animContainer.Items[i].Value[ARRAY_KEY];
@@ -79,7 +81,7 @@ namespace SFVAnimationsEditor.ViewModel
                     // if it's null, add a blank item and continue
                     if (item.Id == -1)
                     {
-                        animItemVm = new AnimationListItem(j, "", "");
+                        animItemVm = new ListItem(j, "", "");
                         animSeqListVm.Items.Add(animItemVm);
                         continue;
                     }
@@ -117,7 +119,7 @@ namespace SFVAnimationsEditor.ViewModel
                     // add strings to Animation Strings List (List of Modifiable Strings, for later)
                     AnimationStrings.AddRange(new StringProperty[] { new StringProperty(animName), new StringProperty(animPath) });
                     // add Item to AnimationList
-                    animItemVm = new AnimationListItem(j, animName, animPath, animItem6);
+                    animItemVm = new ListItem(j, animName, animPath, animItem6);
                     animSeqListVm.Items.Add(animItemVm);
                 }
 
@@ -129,7 +131,7 @@ namespace SFVAnimationsEditor.ViewModel
         public override IList<StringProperty> GetStrings()
         {
             var result = new List<StringProperty>();
-            AnimationListItem item;
+            ListItem item;
 
             foreach(var list in AnimSeqLists)
             {
@@ -156,7 +158,7 @@ namespace SFVAnimationsEditor.ViewModel
             StructProperty animSeqListStructProperty;
             ArrayProperty animSeqListItemsArrayProperty;
             ObjectProperty animSeqListItem;
-            AnimationList animSeqListVm;
+            AnimationListVm animSeqListVm;
 
             // iterate through list of AnimSeqList`s
             for (var i = 0; i < AnimSeqLists.Count; i++)
@@ -227,7 +229,7 @@ namespace SFVAnimationsEditor.ViewModel
             var modifiedDeclareBlock = new DeclarationBlock();
 
             DeclarationItem animNameDeclareItem; // declaration item representing the animation name
-            AnimationListItem animationItem;     // vm form of the ^
+            ListItem animationItem;     // vm form of the ^
             bool foundItemName;
 
             for (var i = 0; i < pathsDeclareBlock.Count; i++)
@@ -286,62 +288,12 @@ namespace SFVAnimationsEditor.ViewModel
 
         public override void Initialize()
         {
-            AnimSeqLists = new ObservableCollection<AnimationList>();
+            AnimSeqLists = new ObservableCollection<AnimationListVm>();
             AnimationStrings = new List<StringProperty>();
         }
     }
 
-    public class AnimationList
-    {
-        public string Header { get; set; } // (Tab Item)
-        public ObservableCollection<AnimationListItem> Items { get; set; } // (Tab Content)
-
-        public AnimationList() { }
-        public AnimationList(ObservableCollection<AnimationListItem> items) { Items = items; }
-
-        public void UpdateIndices()
-        {
-            for (var i = 0; i < Items.Count; i++)
-                Items[i].UpdateIndex(i);
-        }
-    }
-
-    public class AnimationListItem
-    {
-        // name -- dependency is path
-        // path
-
-        public int Index { get; private set; } = -1;
-
-        public string Name { get; set; }
-        public string Path { get; set; }
-        public int Item6 { get; set; }
-
-        public AnimationListItem()
-        {
-            Name = "Name";
-            Path = "Path";
-            Item6 = 0;
-        }
-
-        public AnimationListItem(string name, string path, int item6 = 0)
-        {
-            Name = name;
-            Path = path;
-            Item6 = item6;
-        }
-
-        public AnimationListItem(int index, string name, string path, int item6 = 0) : this(name, path, item6)
-        {
-            Index = index;
-        }
-
-        public void UpdateIndex(int index)
-        {
-            Index = index;
-        }
-    }
-
+    
     public class StringPropertyComparer : IEqualityComparer<StringProperty>
     {
         public bool Equals(StringProperty x, StringProperty y)

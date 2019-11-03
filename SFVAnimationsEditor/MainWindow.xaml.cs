@@ -1,4 +1,5 @@
-﻿using SFVAnimationsEditor.ViewModel;
+﻿using GalaSoft.MvvmLight.Messaging;
+using SFVAnimationsEditor.ViewModel;
 using System;
 using System.Windows;
 using System.Windows.Controls;
@@ -18,17 +19,23 @@ namespace SFVAnimationsEditor
         //    executableLocation + "/originals/DA_NCL_AnimSeqWithIdContainer.uasset";
         //    executableLocation + "/originals/DA_KRN_PSListContainer.uasset";
             executableLocation + "/originals/DA_RYU_PSListContainer.uasset";
+        //    executableLocation + "/originals/DA_RYU_TrailList.uasset";
         //    @"DA_RYU_AnimSeqWithIdContainer.uasset";
 #endif
 
         public MainViewModel mainVM;
         public string filePath = "";
 
+        private IMessenger _messenger;
+
 
         public MainWindow(string path = "")
         {
             InitializeComponent();
             Closing += (s, e) => ViewModelLocator.Cleanup();
+
+            _messenger = Messenger.Default;
+            _messenger.Register<NotificationMessage>(this, "ERROR MESSAGE", DisplayMessageBox);
 
 #if DEBUG
             filePath = path == "" ? TEMP_FILEPATH : path;
@@ -69,6 +76,11 @@ namespace SFVAnimationsEditor
 
             System.Windows.Data.BindingOperations.SetBinding(declarationViewer, DataGrid.ItemsSourceProperty, binding);
 #endif
+        }
+
+        private void DisplayMessageBox(NotificationMessage message)
+        {
+            MessageBox.Show(message.Notification);
         }
     }
 }

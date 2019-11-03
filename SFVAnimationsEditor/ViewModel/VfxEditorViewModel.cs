@@ -1,5 +1,7 @@
 ﻿using GalaSoft.MvvmLight;
 using SFVAnimationsEditor.Model;
+using SFVAnimationsEditor.Model.Lists;
+using SFVAnimationsEditor.ViewModel.Lists;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -23,8 +25,8 @@ namespace SFVAnimationsEditor.ViewModel
         public override string ITEM_NAME_NAMESPACE => "/Script/KiwiVfx";
         public override string ITEM_PATH_NAMESPACE => "/Script/CoreUObject";
 
-        private VfxList _VfxList;
-        public  VfxList VfxList
+        private ListVm _VfxList;
+        public ListVm VfxList
         {
             get => _VfxList;
             set => Set(ref _VfxList, value);
@@ -41,9 +43,9 @@ namespace SFVAnimationsEditor.ViewModel
                 return;
             }
 
-            VfxList = new VfxList( items: new ObservableCollection<VfxListItem>() );
+            VfxList = new ListVm( items: new ObservableCollection<ListItem>() );
 
-            VfxListItem vfxItemVm;
+            ListItem vfxItemVm;
             ObjectProperty item;
 
             DeclarationItem declareItem;
@@ -67,7 +69,7 @@ namespace SFVAnimationsEditor.ViewModel
                 // if it's null, add a blank item and continue
                 if (item.Id == -1)
                 {
-                    vfxItemVm = new VfxListItem(i, "", "");
+                    vfxItemVm = new ListItem(i, "", "");
                     VfxList.Items.Add(vfxItemVm);
                     continue;
                 }
@@ -105,7 +107,7 @@ namespace SFVAnimationsEditor.ViewModel
                 // add strings to VFX Strings List (List of Modifiable Strings, for later)
                 VfxStrings.AddRange(new StringProperty[] { new StringProperty(vfxName), new StringProperty(vfxPath) });
                 // add Item to VfxList
-                vfxItemVm = new VfxListItem(i, vfxName, vfxPath, vfxItem6);
+                vfxItemVm = new ListItem(i, vfxName, vfxPath, vfxItem6);
                 VfxList.Items.Add(vfxItemVm);
             }
         }
@@ -113,7 +115,7 @@ namespace SFVAnimationsEditor.ViewModel
         public override IList<StringProperty> GetStrings()
         {
             var result = new List<StringProperty>();
-            VfxListItem item;
+            ListItem item;
 
             for (var i = 0; i < VfxList.Items.Count; i++)
             {
@@ -190,7 +192,7 @@ namespace SFVAnimationsEditor.ViewModel
             var modifiedDeclareBlock = new DeclarationBlock();
 
             DeclarationItem vfxNameDeclareItem; // declaration item representing the vfx name
-            VfxListItem vfxListItem;            // vm form of the ^
+            ListItem vfxListItem;            // vm form of the ^
             bool foundItemName;
 
             // for each path item, search for a name item that corresponds to that path item
@@ -249,68 +251,8 @@ namespace SFVAnimationsEditor.ViewModel
 
         public override void Initialize()
         {
-            VfxList = new VfxList();
+            VfxList = new ListVm();
             VfxStrings = new List<StringProperty>();
         }
-    }
-
-    public class VfxList
-    {
-        public ObservableCollection<VfxListItem> Items { get; set; }
-
-
-        public VfxList() { }
-
-        public VfxList(ObservableCollection<VfxListItem> items)
-        {
-            Items = items;
-        }
-
-        public void UpdateIndices()
-        {
-            for (var i = 0; i < Items.Count; i++)
-                Items[i].UpdateIndex(i);
-        }
-    }
-
-    public class VfxListItem
-    {
-        public int Index { get; private set; } = -1;
-
-        public string Name { get; set; }
-        public string Path { get; set; }
-        public int Item6 { get; set; }
-
-
-        public VfxListItem()
-        {
-            Name = "Name";
-            Path = "Path";
-            Item6 = 0;
-        }
-
-        public VfxListItem(string name, string path, int item6 = 0)
-        {
-            Name = name;
-            Path = path;
-            Item6 = item6;
-        }
-
-        public VfxListItem(int index, string name, string path, int item6 = 0) : this(name, path, item6)
-        {
-            Index = index;
-        }
-
-
-        public void UpdateIndex(int index)
-        {
-            Index = index;
-        }
-
-
-        public override string ToString()
-        {
-            return $"{this.GetType().Name}; {Index}: {Name}, {Path}";
-        }
-    }
+    } 
 }
