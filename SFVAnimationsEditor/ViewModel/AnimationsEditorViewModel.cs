@@ -34,8 +34,6 @@ namespace SFVAnimationsEditor.ViewModel
             set => Set(ref _AnimSeqLists, value);
         }
 
-        public List<StringProperty> AnimationStrings;
-
 
         public void GetAnimationList(StructProperty content, DeclarationBlock declare)
         {
@@ -117,7 +115,7 @@ namespace SFVAnimationsEditor.ViewModel
                     #endregion
 
                     // add strings to Animation Strings List (List of Modifiable Strings, for later)
-                    AnimationStrings.AddRange(new StringProperty[] { new StringProperty(animName), new StringProperty(animPath) });
+                    Strings.AddRange(new StringProperty[] { new StringProperty(animName), new StringProperty(animPath) });
                     // add Item to AnimationList
                     animItemVm = new ListItem(j, animName, animPath, animItem6);
                     animSeqListVm.Items.Add(animItemVm);
@@ -289,7 +287,7 @@ namespace SFVAnimationsEditor.ViewModel
         public override void Initialize()
         {
             AnimSeqLists = new ObservableCollection<AnimationListVm>();
-            AnimationStrings = new List<StringProperty>();
+            Strings = new List<StringProperty>();
         }
     }
 

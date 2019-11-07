@@ -18,8 +18,8 @@ namespace SFVAnimationsEditor
         //    "";
         //    executableLocation + "/originals/DA_NCL_AnimSeqWithIdContainer.uasset";
         //    executableLocation + "/originals/DA_KRN_PSListContainer.uasset";
-            executableLocation + "/originals/DA_RYU_PSListContainer.uasset";
-        //    executableLocation + "/originals/DA_RYU_TrailList.uasset";
+        //    executableLocation + "/originals/DA_RYU_PSListContainer.uasset";
+            executableLocation + "/originals/DA_RYU_TrailList.uasset";
         //    @"DA_RYU_AnimSeqWithIdContainer.uasset";
 #endif
 
@@ -52,7 +52,7 @@ namespace SFVAnimationsEditor
         {
             var tbOutput = (TextBox)FindName("tbOutput");
             tbOutput.Clear();
-            Console.SetOut(new WpfUtil.OutputWriter(tbOutput));
+            Console.SetOut(new UassetReader.WpfUtil.MultiOutTextWriter(new WpfUtil.OutputWriter(tbOutput), Console.Out));
             Console.WriteLine("Console ready.\n");
 
             mainVM = new MainViewModel();
@@ -61,7 +61,11 @@ namespace SFVAnimationsEditor
             if (filePath != "")
                 mainVM.FilePath = filePath;
             else
-                Console.WriteLine("TIP:  You can drag a \"DA_***_AnimSeqWithIdContainer.uasset\" or \"DA_***_PSListContainer.uasset\" onto SFVAnimationsEditor.exe to immediately open it for editing!");
+                Console.WriteLine("TIP:  You can drag a compatible file onto SFVListEditor.exe to immediately open it for editing!\n" +
+                    "\tCompatible Files:\n" +
+                    "\t\t\"DA_***_AnimSeqWithIdContainer.uasset\"\n" +
+                    "\t\t\"DA_***_PSListContainer.uasset\"\n" +
+                    "\t\t\"DA_***_TrailList.uasset\"");
 
             mainVM.OpenFile(isFilePreselected: true);
 

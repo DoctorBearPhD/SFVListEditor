@@ -84,7 +84,11 @@
     <Compile Include="Model\DataService.cs" />
     <Compile Include="Model\IDataService.cs" />
     <Compile Include="Model\Lists\ListItem.cs" />
+    <Compile Include="Model\Lists\TrailListItem.cs" />
     <Compile Include="Model\UassetFile.cs" />
+    <Compile Include="TrailEditorView.xaml.cs">
+      <DependentUpon>TrailEditorView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="VfxEditorView.xaml.cs">
       <DependentUpon>VfxEditorView.xaml</DependentUpon>
     </Compile>
@@ -97,8 +101,10 @@
       <DependentUpon>StringEditorView.xaml</DependentUpon>
     </Compile>
     <Compile Include="ViewModel\StringEditorViewModel.cs" />
+    <Compile Include="ViewModel\TrailEditorViewModel.cs" />
     <Compile Include="ViewModel\VfxEditorViewModel.cs" />
     <Compile Include="ViewModel\ViewModelLocator.cs" />
+    <Compile Include="WpfUtil\MultiOutTextWriter.cs" />
     <Compile Include="WpfUtil\OutputWriter.cs" />
     <Page Include="AnimationsEditorView.xaml">
       <SubType>Form</SubType>
@@ -126,6 +132,10 @@
     </Page>
     <Page Include="StringEditorView.xaml">
       <SubType>Form</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="TrailEditorView.xaml">
+      <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="VfxEditorView.xaml">

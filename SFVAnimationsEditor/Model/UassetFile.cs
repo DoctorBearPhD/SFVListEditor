@@ -151,9 +151,15 @@ namespace SFVAnimationsEditor.Model
                              $"\n\tBinaryReader position: {br.BaseStream.Position} (0x{br.BaseStream.Position:X})");
 
             // Read Content struct
-            
-            ContentStruct = ReadStruct(br);
-
+            try
+            {
+                ContentStruct = ReadStruct(br);
+            }
+            catch (Exception e)
+            {
+                System.Diagnostics.Debug.WriteLine(e.Message);
+                throw;
+            }
             Console.WriteLine($"\nFinished reading uasset!");
 
         }
@@ -614,7 +620,7 @@ namespace SFVAnimationsEditor.Model
         internal IntProperty ReadInt(BinaryReader br)
         {
             var ip = new IntProperty { Value = br.ReadInt32() };
-            Console.WriteLine($"\tIntProperty Value: {ip.Value} (0x{ip.Value:X}");
+            Console.WriteLine($"\tIntProperty Value: {ip.Value} (0x{ip.Value:X})");
 
             return ip;
         }
@@ -798,16 +804,13 @@ namespace SFVAnimationsEditor.Model
         public int Value { get; set; }
 
 
+        public IntProperty() { }
+        public IntProperty(int value) { Value = value; }
+        
+
         public override byte[] GetBytes(IList<string> stringList = null, DeclarationBlock declare = null)
         {
-            var resultBytes = new List<byte>();
-            // get bytes of Value
-            byte[] valueBytes = BitConverter.GetBytes(Value);
-            // add value's size in bytes
-            resultBytes.AddRange(BitConverter.GetBytes(valueBytes.Length));
-            resultBytes.AddRange(valueBytes);
-
-            return resultBytes.ToArray();
+            return BitConverter.GetBytes(Value);
         }
     }
 

@@ -20,6 +20,8 @@ namespace SFVAnimationsEditor.ViewModel
         abstract public string ITEM_NAME_NAMESPACE { get; }
         abstract public string ITEM_PATH_NAMESPACE { get; }
 
+        public List<StringProperty> Strings;
+
 
         /// <summary>
         /// Initializes a new instance of the BaseEditorViewModel class.

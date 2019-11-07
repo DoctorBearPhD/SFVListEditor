@@ -41,7 +41,7 @@
                 <RowDefinition Height="10"/>
                 <RowDefinition />
                 <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
+                <RowDefinition />
             </Grid.RowDefinitions>
 
             <ContentControl Content="{Binding CurrentEditor}" Grid.Row="0">
@@ -57,13 +57,18 @@
                         <local:VfxEditorView DataContext="{Binding}" />
                     </DataTemplate>
                     
+                    <!-- TRAIL LIST EDITOR -->
+                    <DataTemplate DataType="{x:Type vm:TrailEditorViewModel}">
+                        <local:TrailEditorView DataContext="{Binding}" />
+                    </DataTemplate>
+                    
                 </ContentControl.Resources>
             </ContentControl>
             <!-- SPLITTER -->
             <GridSplitter Grid.Row="1" HorizontalAlignment="Stretch" />
 
             <!-- CONSOLE -->
-            <TextBox Name="tbOutput" Grid.Row="2" MinHeight="200"
+            <TextBox Name="tbOutput" Grid.Row="2"
                      FontFamily="Consolas"
                      Background="{StaticResource SCB_Sidebar_Background}" Foreground="LightGray" BorderBrush="{x:Null}" 
                      AcceptsReturn="True" VerticalScrollBarVisibility="Auto" 

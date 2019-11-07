@@ -8,14 +8,14 @@ using System.Threading.Tasks;
 
 namespace SFVAnimationsEditor.ViewModel.Lists
 {
-    public class ListVm
+    public class ListVm<T> where T : ListItem
     {
-        public ObservableCollection<ListItem> Items { get; set; }
+        public ObservableCollection<T> Items { get; set; }
 
 
         public ListVm() { }
 
-        public ListVm(ObservableCollection<ListItem> items)
+        public ListVm(ObservableCollection<T> items)
         {
             Items = items;
         }

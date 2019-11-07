@@ -89,6 +89,7 @@ namespace SFVAnimationsEditor.ViewModel
 
         public AnimationsEditorViewModel AnimationsEditor { get; set; }
         public VfxEditorViewModel VfxEditor { get; set; }
+        public TrailEditorViewModel TrailEditor { get; set; }
         //public StringEditorViewModel StringEditor { get; set; }
 
 
@@ -121,6 +122,7 @@ namespace SFVAnimationsEditor.ViewModel
 
             AnimationsEditor = SimpleIoc.Default.GetInstance<AnimationsEditorViewModel>();
             VfxEditor = SimpleIoc.Default.GetInstance<VfxEditorViewModel>();
+            TrailEditor = SimpleIoc.Default.GetInstance<TrailEditorViewModel>();
             //StringEditor = SimpleIoc.Default.GetInstance<StringEditorViewModel>();
         }
 
@@ -155,34 +157,34 @@ namespace SFVAnimationsEditor.ViewModel
                     CurrentEditor = AnimationsEditor;
                     CurrentEditor.Initialize(); // reset to default
                     AnimationsEditor.GetAnimationList(UFile.ContentStruct, UFile.Declaration);
-
-                    // Remove animation names/paths from Original List, leaving only the strings that won't be changed.
-                    SetUnchangedStringList(AnimationsEditor.AnimationStrings);
-
-                    // do the same for the Declare Block
-                    //  Remove entries whose name exists in the strings list
-                    SetUnchangedDeclareBlock(AnimationsEditor.AnimationStrings);
                 }
                 else if (UFile.ContentStruct.Value.ContainsKey(VfxEditorViewModel.CONTAINER_KEY))
                 {
                     CurrentEditor = VfxEditor;
                     CurrentEditor.Initialize(); // reset to default
                     VfxEditor.GetVfxList(UFile.ContentStruct, UFile.Declaration);
-
-                    // Remove vfx names/paths from Original List, leaving only the strings that won't be changed.
-                    SetUnchangedStringList(VfxEditor.VfxStrings);
-
-                    // do the same for the Declare Block
-                    //  remove entries whose name exists in the strings list
-                    SetUnchangedDeclareBlock(VfxEditor.VfxStrings);
+                }
+                else if (UFile.ContentStruct.Value.ContainsKey(TrailEditorViewModel.CONTAINER_KEY))
+                {
+                    CurrentEditor = TrailEditor;
+                    CurrentEditor.Initialize();
+                    TrailEditor.GetTrailList(UFile.ContentStruct, UFile.Declaration);
                 }
                 else
                 {
                     Console.WriteLine("WARNING!!! - No readable content found! Only the following types of UAsset files are allowed:\n\t" +
                         "1) AnimSeqWithIdList\n\t" +
-                        "2) PSListContainer\n");
+                        "2) PSListContainer\n\t" +
+                        "3) TrailList\n");
                     return;
                 }
+
+                // Remove modifiable names/paths from Original List, leaving only the strings that won't be changed.
+                SetUnchangedStringList(CurrentEditor.Strings);
+
+                // do the same for the Declare Block
+                //  remove entries whose name exists in the strings list
+                SetUnchangedDeclareBlock(CurrentEditor.Strings);
             }
             catch
             {
@@ -213,7 +215,8 @@ namespace SFVAnimationsEditor.ViewModel
         private void SaveAs()
         {
             if (!UFile.ContentStruct.Value.ContainsKey(AnimationsEditorViewModel.CONTAINER_KEY) &&
-                !UFile.ContentStruct.Value.ContainsKey(VfxEditorViewModel.CONTAINER_KEY))
+                !UFile.ContentStruct.Value.ContainsKey(VfxEditorViewModel.CONTAINER_KEY) &&
+                !UFile.ContentStruct.Value.ContainsKey(TrailEditorViewModel.CONTAINER_KEY))
             {
                 // How did we get here? Probably unnecessary...
                 Console.WriteLine("!!!WARNING!!!  Unexpected error occurred while saving! File type could not be determined.");

@@ -1,5 +1,4 @@
-﻿using GalaSoft.MvvmLight;
-using SFVAnimationsEditor.Model;
+﻿using SFVAnimationsEditor.Model;
 using SFVAnimationsEditor.Model.Lists;
 using SFVAnimationsEditor.ViewModel.Lists;
 using System;
@@ -25,15 +24,13 @@ namespace SFVAnimationsEditor.ViewModel
         public override string ITEM_NAME_NAMESPACE => "/Script/KiwiVfx";
         public override string ITEM_PATH_NAMESPACE => "/Script/CoreUObject";
 
-        private ListVm _VfxList;
-        public ListVm VfxList
+        private ListVm<ListItem> _VfxList;
+        public ListVm<ListItem> VfxList
         {
             get => _VfxList;
             set => Set(ref _VfxList, value);
         }
         
-        public List<StringProperty> VfxStrings;
-
 
         public void GetVfxList(StructProperty content, DeclarationBlock declare)
         {
@@ -43,7 +40,7 @@ namespace SFVAnimationsEditor.ViewModel
                 return;
             }
 
-            VfxList = new ListVm( items: new ObservableCollection<ListItem>() );
+            VfxList = new ListVm<ListItem>( items: new ObservableCollection<ListItem>() );
 
             ListItem vfxItemVm;
             ObjectProperty item;
@@ -105,7 +102,7 @@ namespace SFVAnimationsEditor.ViewModel
                 #endregion
 
                 // add strings to VFX Strings List (List of Modifiable Strings, for later)
-                VfxStrings.AddRange(new StringProperty[] { new StringProperty(vfxName), new StringProperty(vfxPath) });
+                Strings.AddRange(new StringProperty[] { new StringProperty(vfxName), new StringProperty(vfxPath) });
                 // add Item to VfxList
                 vfxItemVm = new ListItem(i, vfxName, vfxPath, vfxItem6);
                 VfxList.Items.Add(vfxItemVm);
@@ -251,8 +248,8 @@ namespace SFVAnimationsEditor.ViewModel
 
         public override void Initialize()
         {
-            VfxList = new ListVm();
-            VfxStrings = new List<StringProperty>();
+            VfxList = new ListVm<ListItem>();
+            Strings = new List<StringProperty>();
         }
     } 
 }

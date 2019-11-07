@@ -1,6 +1,5 @@
 ﻿using System.IO;
 using System.Text;
-using System.Threading;
 using System.Windows.Controls;
 
 namespace SFVAnimationsEditor.WpfUtil
@@ -8,10 +7,10 @@ namespace SFVAnimationsEditor.WpfUtil
     public class OutputWriter : TextWriter
     {
         private TextBox textbox;
-        //private StringBuilder sb;
-        //private SynchronizationContext Synchronization = SynchronizationContext.Current;
+        ////private StringBuilder sb;
+        ////private SynchronizationContext Synchronization = SynchronizationContext.Current;
 
-
+        
         public OutputWriter(TextBox textbox)
         {
             this.textbox = textbox;
@@ -20,17 +19,10 @@ namespace SFVAnimationsEditor.WpfUtil
 
         public override void Write(char value)
         {
-            ////sb.Append(value);
-            ////if (value == '\n')
-            ////{
-            ////    Write(sb.ToString());
-            ////    sb.Clear();
-            ////}
-            ////return;
             App.Current.Dispatcher.BeginInvoke(new System.Action(
                 () => {
                     textbox.Text += value;
-                    //if (value == '\n') textbox.ScrollToEnd();
+                    ////if (value == '\n') textbox.ScrollToEnd();
                 }
             ));
         }
@@ -38,7 +30,10 @@ namespace SFVAnimationsEditor.WpfUtil
         public override void Write(string value)
         {
             App.Current.Dispatcher.BeginInvoke(new System.Action(
-                () => { textbox.AppendText(value); textbox.ScrollToEnd(); }
+                () => {
+                    textbox.AppendText(value);
+                    textbox.ScrollToEnd();
+                }
             ));
 
             ////Synchronization.Post(
@@ -55,7 +50,7 @@ namespace SFVAnimationsEditor.WpfUtil
                 () =>
                 {
                     textbox.AppendText(value + "\n");
-                    textbox.ScrollToEnd();
+                    ////textbox.ScrollToEnd();
                 }
             ));
 
@@ -67,10 +62,7 @@ namespace SFVAnimationsEditor.WpfUtil
             ////    null);
         }
 
-        public override Encoding Encoding
-        {
-            get { return Encoding.ASCII; }
-        }
+        public override Encoding Encoding => Encoding.ASCII;
     }
 
 }

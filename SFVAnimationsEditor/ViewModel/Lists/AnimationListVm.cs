@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SFVAnimationsEditor.ViewModel.Lists
 {
-    public class AnimationListVm : ListVm
+    public class AnimationListVm : ListVm<Model.Lists.ListItem>
     {
         public string Header { get; set; } // (Tab Item)
         // (`Items` = Tab Content)
