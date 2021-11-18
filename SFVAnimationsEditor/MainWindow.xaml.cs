@@ -42,9 +42,9 @@ namespace SFVAnimationsEditor
 
 #if DEBUG
             filePath = path == "" && TEMP_FILEPATH != "" ? (executableLocation + TEMP_FILEPATH) : path;
-            declarationSplitter.Visibility = Visibility.Visible;
-            declarationViewer.Visibility = Visibility.Visible;
-            rowDefDebugInfo.Height = new GridLength(1, GridUnitType.Star);
+            //declarationSplitter.Visibility = Visibility.Visible;
+            //declarationViewer.Visibility = Visibility.Visible;
+            //rowDefDebugInfo.Height = new GridLength(1, GridUnitType.Star);
 #else
             if (path != string.Empty)
                 filePath = path;
@@ -54,10 +54,12 @@ namespace SFVAnimationsEditor
 
         private void Start()
         {
-            var tbOutput = (TextBox)FindName("tbOutput");
-            tbOutput.Clear();
-            Console.SetOut(new UassetReader.WpfUtil.MultiOutTextWriter(new WpfUtil.OutputWriter(tbOutput), Console.Out));
-            Console.WriteLine("Console ready.\n");
+            //var tbOutput = (TextBox)FindName("tbOutput");
+            //tbOutput.Clear();
+            //Console.SetOut(new WpfUtil.OutputWriter(tbOutput));
+            //Console.SetOut(new UassetReader.WpfUtil.MultiOutTextWriter(new WpfUtil.OutputWriter(tbOutput), Console.Out));
+            //Console.WriteLine("Console ready.\n");
+            Console.WriteLine("Console disabled.\n");
 
             mainVM = new MainViewModel();
             DataContext = mainVM;
@@ -76,14 +78,14 @@ namespace SFVAnimationsEditor
 
 #if DEBUG
             // set declarationViewer.ItemsSource binding
-            var binding = new System.Windows.Data.Binding
-            {
-                Source = mainVM,
-                Path = new PropertyPath("DeclarationItems"),
-                Mode = System.Windows.Data.BindingMode.OneWay
-            };
+            //var binding = new System.Windows.Data.Binding
+            //{
+            //    Source = mainVM,
+            //    Path = new PropertyPath("DeclarationItems"),
+            //    Mode = System.Windows.Data.BindingMode.OneWay
+            //};
 
-            System.Windows.Data.BindingOperations.SetBinding(declarationViewer, DataGrid.ItemsSourceProperty, binding);
+            //System.Windows.Data.BindingOperations.SetBinding(declarationViewer, DataGrid.ItemsSourceProperty, binding);
 #endif
         }
 

@@ -34,8 +34,8 @@ namespace SFVAnimationsEditor.WpfUtil
         {
             App.Current.Dispatcher.BeginInvoke(new System.Action(
                 () => {
-                    textbox.AppendText(value);
-                    textbox.ScrollToEnd();
+                    textbox.Text += value;
+                    //textbox.ScrollToEnd();
                 }
             ));
 
@@ -53,7 +53,7 @@ namespace SFVAnimationsEditor.WpfUtil
                 () =>
                 {
                     textbox.AppendText(value + "\n");
-                    ////textbox.ScrollToEnd();
+                    //textbox.ScrollToEnd();
                 }
             ));
 

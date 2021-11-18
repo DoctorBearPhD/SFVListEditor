@@ -36,13 +36,13 @@
         
         <Grid>
 
-            <Grid.RowDefinitions>
-                <RowDefinition Height="2*"/>
-                <RowDefinition Height="10"/>
+            <!--<Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
                 <RowDefinition />
                 <RowDefinition Height="Auto"/>
                 <RowDefinition x:Name="rowDefDebugInfo" Height="Auto"/>
-            </Grid.RowDefinitions>
+            </Grid.RowDefinitions>-->
 
             <ContentControl Content="{Binding CurrentEditor}" Grid.Row="0">
                 <ContentControl.Resources>
@@ -65,23 +65,23 @@
                 </ContentControl.Resources>
             </ContentControl>
             <!-- SPLITTER -->
-            <GridSplitter Grid.Row="1" HorizontalAlignment="Stretch" />
+            <!--<GridSplitter Grid.Row="1" HorizontalAlignment="Stretch" Visibility="Collapsed" />
 
-            <!-- CONSOLE -->
+            --><!-- CONSOLE --><!--
             <TextBox Name="tbOutput" Grid.Row="2"
                      FontFamily="Consolas"
                      Background="{StaticResource SCB_Sidebar_Background}" Foreground="LightGray" BorderBrush="{x:Null}" 
                      AcceptsReturn="True" VerticalScrollBarVisibility="Auto" 
-                     IsReadOnlyCaretVisible="True" IsReadOnly="True" TextWrapping="Wrap" />
+                     IsReadOnlyCaretVisible="True" IsReadOnly="True" TextWrapping="Wrap" Visibility="Collapsed"/>-->
 
             <!-- DEBUG STUFF -->
             
-            <!-- SPLITTER -->
+            <!-- SPLITTER --><!--
             <GridSplitter Grid.Row="3" HorizontalAlignment="Stretch" Height="10" x:Name="declarationSplitter" Visibility="Collapsed" />
 
-            <!-- DECLARE BLOCK VIEWER -->
+            --><!-- DECLARE BLOCK VIEWER --><!--
             <DataGrid Grid.Row="4" x:Name="declarationViewer" 
-                      IsReadOnly="True" CanUserSortColumns="False" Visibility="Collapsed" />
+                      IsReadOnly="True" CanUserSortColumns="False" Visibility="Collapsed" />-->
 
         </Grid>
     </DockPanel>
