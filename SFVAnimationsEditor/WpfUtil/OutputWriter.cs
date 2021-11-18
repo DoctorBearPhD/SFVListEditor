@@ -4,6 +4,9 @@ using System.Windows.Controls;
 
 namespace SFVAnimationsEditor.WpfUtil
 {
+    // TODO NEXT: Change how we write to the output.
+    //   Have the TextWriter update a string, and have the TextBox be bound to that string.
+    //   See if that fixes it.
     public class OutputWriter : TextWriter
     {
         private TextBox textbox;

@@ -4,6 +4,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:ignore="http://www.galasoft.ch/ignore"
+             xmlns:ml="clr-namespace:MoralesLarios.Utilities.Excel;assembly=MoralesLarios.Utilities"
              mc:Ignorable="d ignore"
              d:DesignWidth="800" d:DesignHeight="600"
              DataContext="{Binding StringEditor, Source={StaticResource Locator}}">
@@ -14,10 +15,11 @@
 
         <!-- STRING LIST EDITOR -->
         <DataGrid ItemsSource="{Binding UFileStringList, Mode=TwoWay}" 
-                          CanUserSortColumns="False" 
-                          CanUserAddRows="True" 
-                          AutoGenerateColumns="False" 
-                          LoadingRow="OnLoadingRow">
+                  CanUserSortColumns="False" 
+                  CanUserAddRows="True" 
+                  AutoGenerateColumns="False" 
+                  LoadingRow="OnLoadingRow"
+                  ml:ExcelActions.EnabledCopyExcel="True" ml:ExcelActions.EnabledPasteExcel="True" ml:ExcelActions.ContainsHeader="False">
 
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Value" Binding="{Binding Value, Mode=TwoWay}" />

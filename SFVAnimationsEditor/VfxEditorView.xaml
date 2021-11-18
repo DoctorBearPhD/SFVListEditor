@@ -4,12 +4,14 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:ignore="http://www.galasoft.ch/ignore"
+             xmlns:ml="clr-namespace:MoralesLarios.Utilities.Excel;assembly=MoralesLarios.Utilities"
              mc:Ignorable="d ignore"
              d:DesignWidth="800" d:DesignHeight="500"
              DataContext="{Binding VfxEditor, Source={StaticResource Locator}}">
     <Grid DataContext="{Binding VfxList}">
         <DataGrid ItemsSource="{Binding Items}" 
                   CanUserSortColumns="False" CanUserResizeRows="False" 
-                  InitializingNewItem="DataGrid_InitializingNewItem"/>
+                  InitializingNewItem="DataGrid_InitializingNewItem"
+                  ml:ExcelActions.EnabledCopyExcel="True" ml:ExcelActions.EnabledPasteExcel="True" ml:ExcelActions.ContainsHeader="False" />
     </Grid>
 </UserControl>

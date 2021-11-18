@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using UassetLib;
 
 // TODO: Move all animation-specific code to animation-specific handler / AnimationEditorViewModel
 
@@ -142,8 +143,7 @@ namespace SFVAnimationsEditor.ViewModel
 
             try
             {
-                _UFile.ReadUasset(ref br);
-                UFile = _UFile;
+                UFile.ReadUasset(ref br);
                 ////StringEditor.UFileStringList = UFile.StringList;
                 OriginalStringList = UFile.StringList;
                 OriginalDeclareBlock = UFile.Declaration;
@@ -172,7 +172,7 @@ namespace SFVAnimationsEditor.ViewModel
                 }
                 else
                 {
-                    Console.WriteLine("WARNING!!! - No readable content found! Only the following types of UAsset files are allowed:\n\t" +
+                    Console.WriteLine("WARNING!!! - Could not display the file contents! Only the following types of UAsset files are allowed:\n\t" +
                         "1) AnimSeqWithIdList\n\t" +
                         "2) PSListContainer\n\t" +
                         "3) TrailList\n");
@@ -291,6 +291,7 @@ namespace SFVAnimationsEditor.ViewModel
 #endif
         }
 
+        // What is isFilePreselected actually doing? Why did I put that there? Rename it so it makes sense >:(
         public void OpenFile(bool isFilePreselected = false)
         {
             if (!isFilePreselected)
@@ -310,7 +311,7 @@ namespace SFVAnimationsEditor.ViewModel
             if (FilePath == "") return;
 
             // ***WARNING: Shortcutting my design here by referencing the view from inside the viewmodel... D:
-            ((System.Windows.Controls.TextBox)App.Current.MainWindow.FindName("tbOutput"))?.Clear();
+            ((System.Windows.Controls.TextBox)App.Current.MainWindow.FindName("tbOutput"))?.Clear(); // clears the output panel's text
 
             // make backup
             try

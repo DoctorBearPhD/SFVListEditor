@@ -2,6 +2,7 @@
 using SFVAnimationsEditor.Model;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using UassetLib;
 
 namespace SFVAnimationsEditor.ViewModel
 {

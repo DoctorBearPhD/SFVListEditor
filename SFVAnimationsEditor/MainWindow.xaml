@@ -41,7 +41,7 @@
                 <RowDefinition Height="10"/>
                 <RowDefinition />
                 <RowDefinition Height="Auto"/>
-                <RowDefinition />
+                <RowDefinition x:Name="rowDefDebugInfo" Height="Auto"/>
             </Grid.RowDefinitions>
 
             <ContentControl Content="{Binding CurrentEditor}" Grid.Row="0">
