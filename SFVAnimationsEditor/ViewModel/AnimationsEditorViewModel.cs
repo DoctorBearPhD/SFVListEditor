@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using UassetLib;
 
 namespace SFVAnimationsEditor.ViewModel
 {
@@ -65,7 +66,7 @@ namespace SFVAnimationsEditor.ViewModel
             {
                 animSeqListVm = new AnimationListVm
                 {
-                    Header = animContainer.Items[i].Value[CATEGORY_KEY],
+                    Header = animContainer.Items[i].Value[CATEGORY_KEY].Value,
                     Items = new ObservableCollection<ListItem>()
                 };
 

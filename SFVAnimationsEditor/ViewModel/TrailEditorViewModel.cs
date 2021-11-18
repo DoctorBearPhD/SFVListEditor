@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using SFVAnimationsEditor.Model;
 using SFVAnimationsEditor.Model.Lists;
 using SFVAnimationsEditor.ViewModel.Lists;
+using UassetLib;
 
 namespace SFVAnimationsEditor.ViewModel
 {
