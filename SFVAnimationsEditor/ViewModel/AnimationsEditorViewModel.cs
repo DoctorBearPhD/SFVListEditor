@@ -22,6 +22,8 @@ namespace SFVAnimationsEditor.ViewModel
         public const string CATEGORY_KEY  = "Description";
         public const string ARRAY_KEY     = "AnimSeqList";
 
+        private const string CMN_OBJ_KEY  = "COMMON OBJECT";
+
         public override string ITEM_NAME_TYPE => "AnimSequence";
         public override string ITEM_PATH_TYPE => "Package";
         public override string ITEM_NAME_NAMESPACE => "/Script/Engine";
@@ -52,6 +54,8 @@ namespace SFVAnimationsEditor.ViewModel
 
             DeclarationItem declareItem;
 
+            bool isCommonObject = false;
+
             int animNameId;
             int animPathId;
             int animItem6;
@@ -61,6 +65,8 @@ namespace SFVAnimationsEditor.ViewModel
 
             var animContainer = (ArrayProperty)content.Value[CONTAINER_KEY];
             
+            // TODO: Somewhere in here, assign IsReadOnly 
+
             // iterate through AnimSeqListWithIdContainer
             for (var i = 0; i < animContainer.Count; i++)
             {
@@ -69,6 +75,8 @@ namespace SFVAnimationsEditor.ViewModel
                     Header = animContainer.Items[i].Value[CATEGORY_KEY].Value,
                     Items = new ObservableCollection<ListItem>()
                 };
+
+                isCommonObject = (animSeqListVm.Header == CMN_OBJ_KEY);
 
                 var animSeqListItemsArrayProperty = (ArrayProperty)animContainer.Items[i].Value[ARRAY_KEY];
 
@@ -119,6 +127,7 @@ namespace SFVAnimationsEditor.ViewModel
                     Strings.AddRange(new StringProperty[] { new StringProperty(animName), new StringProperty(animPath) });
                     // add Item to AnimationList
                     animItemVm = new ListItem(j, animName, animPath, animItem6);
+                    if (isCommonObject) animItemVm.IsReadOnly = true; // signifies that the user should be unable to edit filled COMMON_OBJECT entries
                     animSeqListVm.Items.Add(animItemVm);
                 }
 

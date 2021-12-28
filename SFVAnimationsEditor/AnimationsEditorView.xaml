@@ -24,6 +24,7 @@
                 <DataGrid ItemsSource="{Binding Items}" 
                           CanUserSortColumns="False" CanUserResizeRows="False" 
                           InitializingNewItem="DataGrid_InitializingNewItem"
+                          BeginningEdit="DataGrid_BeginningEdit"
                           ml:ExcelActions.EnabledCopyExcel="True" ml:ExcelActions.EnabledPasteExcel="True" ml:ExcelActions.ContainsHeader="False" />
             </DataTemplate>
         </TabControl.ContentTemplate>

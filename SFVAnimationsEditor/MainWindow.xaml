@@ -64,6 +64,7 @@
                     
                 </ContentControl.Resources>
             </ContentControl>
+            
             <!-- SPLITTER -->
             <!--<GridSplitter Grid.Row="1" HorizontalAlignment="Stretch" Visibility="Collapsed" />
 

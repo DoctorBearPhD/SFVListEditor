@@ -8,11 +8,16 @@ namespace SFVAnimationsEditor.Model.Lists
 {
     public class ListItem
     {
-        public int Index { get; private set; } = -1;
+        /// <summary>
+        /// Used to prevent editing entries in the COMMON_OBJECT tab if they already had a value.
+        /// </summary>
+        public bool IsReadOnly = false;
 
-        public string Name { get; set; }
-        public string Path { get; set; }
-        public int Item6 { get; set; }
+        public int  Index      { get; private set; } = -1;
+
+        public string Name  { get; set; }
+        public string Path  { get; set; }
+        public int    Item6 { get; set; }
 
 
         public ListItem()

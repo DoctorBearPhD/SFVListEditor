@@ -21,5 +21,13 @@ namespace SFVAnimationsEditor
             if (e.NewItem is Model.Lists.ListItem item)
                 item.UpdateIndex(((DataGrid)sender).Items.Count - 2);
         }
+
+        // Disable ability to edit an entry if it is read-only. User can still select the entry.
+        private void DataGrid_BeginningEdit(object sender, DataGridBeginningEditEventArgs e)
+        {
+            if (e.Row.Item is Model.Lists.ListItem item)
+                if (item.IsReadOnly) 
+                    e.Cancel = true;
+        }
     }
 }
