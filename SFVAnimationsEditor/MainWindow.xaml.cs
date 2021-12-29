@@ -1,8 +1,11 @@
-﻿using GalaSoft.MvvmLight.Messaging;
+﻿using GalaSoft.MvvmLight.Ioc;
+using GalaSoft.MvvmLight.Messaging;
+using SFVAnimationsEditor.Resources;
 using SFVAnimationsEditor.ViewModel;
 using System;
 using System.Windows;
 using System.Windows.Controls;
+using WK.Libraries.BetterFolderBrowserNS;
 
 namespace SFVAnimationsEditor
 {
@@ -15,13 +18,13 @@ namespace SFVAnimationsEditor
         public string executableLocation = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
 
         public string TEMP_FILEPATH =>
-            "";
+        //    "";
         //    @"/originals/DA_NCL_AnimSeqWithIdContainer.uasset";
         //    @"/originals/DA_KRN_PSListContainer.uasset";
         //    @"/originals/DA_RYU_PSListContainer.uasset";
         //    @"/originals/DA_RYU_TrailList.uasset";
         //    @"DA_RYU_AnimSeqWithIdContainer.uasset";
-        //    @"/originals/DA_Z26_AnimSeqWithIdContainer.uasset";
+            @"/originals/DA_Z26_AnimSeqWithIdContainer.uasset";
         //    @"/originals/DA_Z41_AnimSeqWithIdContainer.uasset";
         //    @"/originals/DA_Z41_Prop_01.uasset";
 #endif
@@ -38,7 +41,8 @@ namespace SFVAnimationsEditor
             Closing += (s, e) => ViewModelLocator.Cleanup();
 
             _messenger = Messenger.Default;
-            _messenger.Register<NotificationMessage>(this, "ERROR MESSAGE", DisplayMessageBox);
+            _messenger.Register<NotificationMessage>(this, Constants.DISPLAY_MESSAGE, DisplayMessageBox); // Register listener here, instead of in the VM, because message boxes are part of the View
+            _messenger.Register<string>(this, Constants.REQUEST_DIALOG, DialogRequestHandler);
 
 #if DEBUG
             filePath = path == "" && TEMP_FILEPATH != "" ? (executableLocation + TEMP_FILEPATH) : path;
@@ -61,7 +65,7 @@ namespace SFVAnimationsEditor
             //Console.WriteLine("Console ready.\n");
             Console.WriteLine("Console disabled.\n");
 
-            mainVM = new MainViewModel();
+            mainVM = SimpleIoc.Default.GetInstance<MainViewModel>();
             DataContext = mainVM;
 
             if (filePath != "")
@@ -92,6 +96,31 @@ namespace SFVAnimationsEditor
         private void DisplayMessageBox(NotificationMessage message)
         {
             MessageBox.Show(message.Notification);
+        }
+
+        private void DialogRequestHandler(string str)
+        {
+            switch (str) {
+                case Constants.REQUESTTYPE_FOLDER:
+                    DisplayFolderBrowserDialog();
+                    break;
+                default: break;
+            } 
+        }
+
+        private void DisplayFolderBrowserDialog()
+        {
+            // display
+            var dialog = new BetterFolderBrowser() {
+                    Title = Constants.TITLE_FOLDERSELECTION,
+                    RootFolder = System.IO.Path.GetDirectoryName(filePath),
+                    Multiselect = false
+                };
+
+            // return result via messenger
+            if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                _messenger.Send<string>(token:   Constants.RESPONSETYPE_FOLDERSELECTION, 
+                                        message: dialog.SelectedFolder);
         }
     }
 }

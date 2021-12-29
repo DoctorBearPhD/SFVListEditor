@@ -8,8 +8,8 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using UassetLib;
-
-// TODO: Move all animation-specific code to animation-specific handler / AnimationEditorViewModel
+using SFVAnimationsEditor.Resources;
+using GalaSoft.MvvmLight.Messaging;
 
 namespace SFVAnimationsEditor.ViewModel
 {
@@ -95,8 +95,9 @@ namespace SFVAnimationsEditor.ViewModel
 
 
         public RelayCommand OpenFileCommand => new RelayCommand( () => OpenFile() );
-        public RelayCommand SaveAsCommand => new RelayCommand(SaveAs, () => FilePath != "");
-        public RelayCommand ExitCommand => new RelayCommand(Exit);
+        public RelayCommand SaveAsCommand   => new RelayCommand(SaveAs, () => FilePath != "");
+        public RelayCommand SaveAllCommand  => new RelayCommand(RequestSaveAll, CanExecuteSaveAll);
+        public RelayCommand ExitCommand     => new RelayCommand(Exit);
 
 
 #if DEBUG
@@ -125,6 +126,10 @@ namespace SFVAnimationsEditor.ViewModel
             VfxEditor = SimpleIoc.Default.GetInstance<VfxEditorViewModel>();
             TrailEditor = SimpleIoc.Default.GetInstance<TrailEditorViewModel>();
             //StringEditor = SimpleIoc.Default.GetInstance<StringEditorViewModel>();
+
+            MessengerInstance.Register<string>(recipient: this,
+                                               token: Constants.RESPONSETYPE_FOLDERSELECTION,
+                                               action: SaveAll);
         }
 
 
@@ -212,6 +217,7 @@ namespace SFVAnimationsEditor.ViewModel
             }
         }
 
+        // TODO: stop shortcutting MVVM design pattern in this function :(
         private void SaveAs()
         {
             if (!UFile.ContentStruct.Value.ContainsKey(AnimationsEditorViewModel.CONTAINER_KEY) &&
@@ -291,6 +297,22 @@ namespace SFVAnimationsEditor.ViewModel
 #endif
         }
 
+        private void RequestSaveAll()
+        {
+            // Send warning to make sure user knows what they're doing!
+            MessengerInstance.Send(token: Constants.DISPLAY_MESSAGE, message: new NotificationMessage(Constants.WARNING_SAVE_ALL));
+
+            // Request folder selection
+            MessengerInstance.Send(token: Constants.REQUEST_DIALOG, message: Constants.REQUESTTYPE_FOLDER);
+
+            // Let Animations Editor VM handle the actual saving? Spaghetti code? Separation of duties? Who knows?
+        }
+
+        private void SaveAll(string selectedFolder)
+        {
+            MessengerInstance.Send<NotificationMessage>(token: Constants.DISPLAY_MESSAGE, message: new NotificationMessage("SaveAll reached. Selected folder: " + selectedFolder)); // DEBUG
+        }
+
         // What is isFilePreselected actually doing? Why did I put that there? Rename it so it makes sense >:(
         public void OpenFile(bool isFilePreselected = false)
         {
@@ -330,8 +352,8 @@ namespace SFVAnimationsEditor.ViewModel
             catch (Exception e)
             {
                 MessengerInstance.Send(
-                    token: "ERROR MESSAGE", 
-                    message: new GalaSoft.MvvmLight.Messaging.NotificationMessage(e.Message)
+                    token: Constants.DISPLAY_MESSAGE, 
+                    message: new NotificationMessage(e.Message)
                 );
             }
 
@@ -370,6 +392,11 @@ namespace SFVAnimationsEditor.ViewModel
             }
 
             UFile.Imports = ModifiedImportBlock;
+        }
+
+        private bool CanExecuteSaveAll()
+        {
+            return (CurrentEditor is AnimationsEditorViewModel);
         }
 
 

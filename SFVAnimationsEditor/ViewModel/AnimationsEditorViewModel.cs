@@ -1,8 +1,6 @@
-﻿using GalaSoft.MvvmLight;
-using SFVAnimationsEditor.Model;
-using SFVAnimationsEditor.Model.Lists;
+﻿using SFVAnimationsEditor.Model.Lists;
+//using SFVAnimationsEditor.Resources;
 using SFVAnimationsEditor.ViewModel.Lists;
-using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -38,6 +36,15 @@ namespace SFVAnimationsEditor.ViewModel
         }
 
 
+        public override void Initialize()
+        {
+            AnimSeqLists = new ObservableCollection<AnimationListVm>();
+            Strings = new List<StringProperty>();
+
+            //MessengerInstance.Register<string>(this, token: Constants.RESPONSETYPE_FOLDERSELECTION, action: someAction);
+        }
+
+
         public void GetAnimationList(StructProperty content, DeclarationBlock declare)
         {
             ////if (!content.Value.ContainsKey(CONTAINER_KEY))
@@ -65,8 +72,6 @@ namespace SFVAnimationsEditor.ViewModel
 
             var animContainer = (ArrayProperty)content.Value[CONTAINER_KEY];
             
-            // TODO: Somewhere in here, assign IsReadOnly 
-
             // iterate through AnimSeqListWithIdContainer
             for (var i = 0; i < animContainer.Count; i++)
             {
@@ -292,12 +297,6 @@ namespace SFVAnimationsEditor.ViewModel
                         .Depends = -pathItem.Id - 1; // and set dependency
                 }
             }
-        }
-
-        public override void Initialize()
-        {
-            AnimSeqLists = new ObservableCollection<AnimationListVm>();
-            Strings = new List<StringProperty>();
         }
     }
 
