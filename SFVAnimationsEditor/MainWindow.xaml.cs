@@ -23,14 +23,14 @@ namespace SFVAnimationsEditor
 
         public string TEMP_FILEPATH =>
         //    "";
-        //    @"/originals/DA_NCL_AnimSeqWithIdContainer.uasset";
-        //    @"/originals/DA_KRN_PSListContainer.uasset";
-        //    @"/originals/DA_RYU_PSListContainer.uasset";
-        //    @"/originals/DA_RYU_TrailList.uasset";
-        //    @"DA_RYU_AnimSeqWithIdContainer.uasset";
-            @"/originals/DA_Z26_AnimSeqWithIdContainer.uasset";
-        //    @"/originals/DA_Z41_AnimSeqWithIdContainer.uasset";
-        //    @"/originals/DA_Z41_Prop_01.uasset";
+        //    "\\originals\\DA_NCL_AnimSeqWithIdContainer.uasset";
+        //    "\\originals\\DA_KRN_PSListContainer.uasset";
+        //    "\\originals\\DA_RYU_PSListContainer.uasset";
+        //    "\\originals\\DA_RYU_TrailList.uasset";
+        //    "DA_RYU_AnimSeqWithIdContainer.uasset";
+            "\\originals\\DA_Z26_AnimSeqWithIdContainer.uasset";
+        //    "\\originals\\DA_Z41_AnimSeqWithIdContainer.uasset";
+        //    "\\originals\\DA_Z41_Prop_01.uasset";
 #endif
 
         public MainViewModel mainVM;
@@ -47,7 +47,7 @@ namespace SFVAnimationsEditor
             _messenger = Messenger.Default;
             
             // Register listeners for dialog display requests here, instead of in the VM, because dialog boxes are part of the View
-            _messenger.Register<string>(this, Constants.REQUEST_DIALOG, DialogRequestHandler);
+            _messenger.Register<NotificationMessage<string>>(this, Constants.REQUEST_DIALOG, DialogRequestHandler);
 
 #if DEBUG
             filePath = path == "" && TEMP_FILEPATH != "" ? (executableLocation + TEMP_FILEPATH) : path;
@@ -98,11 +98,21 @@ namespace SFVAnimationsEditor
 #endif
         }
 
-        private void DialogRequestHandler(string str)
+        /// <summary>
+        /// Handles requests for dialog boxes received via the messenger.
+        /// The message's Notification property tells which type of dialog box is being requested.
+        /// If a "Save As" dialog box is requested, the message's Content property tells the file path of the original save file.
+        /// </summary>
+        /// <param name="message"></param>
+        private void DialogRequestHandler(NotificationMessage<string> message)
         {
+            string str = message.Notification;
             switch (str) {
                 case Constants.REQUESTTYPE_FOLDER:
                     DisplayFolderBrowserDialog();
+                    break;
+                case Constants.REQUESTTYPE_SAVEAS:
+                    DisplaySaveAsDialog(message.Content);
                     break;
                 default: break;
             } 
@@ -119,8 +129,25 @@ namespace SFVAnimationsEditor
 
             // return result via messenger
             if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
-                _messenger.Send<string>(token:   Constants.RESPONSETYPE_FOLDERSELECTION, 
+                _messenger.Send<string>(token:   Constants.RESPONSETYPE_FOLDER, 
                                         message: dialog.SelectedFolder);
+        }
+
+        private void DisplaySaveAsDialog(string path)
+        {
+            var fileInfo = new FileInfo(path);
+
+            var saveDialog = new Microsoft.Win32.SaveFileDialog()
+            {
+                Filter = "UAsset files (*.uasset)|*.uasset|All files (*.*)|*.*",
+                FileName = fileInfo.Name
+            };
+            
+            if (saveDialog.ShowDialog() == false) return;
+
+            // send message with result
+            _messenger.Send<string>(token:   Constants.RESPONSETYPE_SAVEAS,
+                                    message: saveDialog.FileName);
         }
     }
 }

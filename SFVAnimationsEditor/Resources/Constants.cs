@@ -16,8 +16,10 @@ namespace SFVAnimationsEditor.Resources
         public const string REQUEST_DIALOG = "REQ_DIA";
         
         public const string REQUESTTYPE_FOLDER = "REQT_F";
+        public const string REQUESTTYPE_SAVEAS = "REQT_SA";
 
-        public const string RESPONSETYPE_FOLDERSELECTION = "REST_FS";
+        public const string RESPONSETYPE_FOLDER = "REST_FS";
+        public const string RESPONSETYPE_SAVEAS = "REST_SAS";
 
         public const string DISPLAY_MESSAGE = "DISP_MSG";
         public const string DISPLAY_ERROR   = "DISP_ERR";

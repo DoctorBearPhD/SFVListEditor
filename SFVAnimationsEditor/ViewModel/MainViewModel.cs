@@ -98,7 +98,7 @@ namespace SFVAnimationsEditor.ViewModel
 
 
         public RelayCommand OpenFileCommand => new RelayCommand( () => OpenFile() );
-        public RelayCommand SaveAsCommand   => new RelayCommand(SaveAs, () => FilePath != "");
+        public RelayCommand SaveAsCommand   => new RelayCommand(RequestSaveAs, () => FilePath != "");
         public RelayCommand SaveAllCommand  => new RelayCommand(RequestSaveAll, CanExecuteSaveAll);
         public RelayCommand ExitCommand     => new RelayCommand(Exit);
 
@@ -133,7 +133,11 @@ namespace SFVAnimationsEditor.ViewModel
             //StringEditor = SimpleIoc.Default.GetInstance<StringEditorViewModel>();
 
             MessengerInstance.Register<string>(recipient: this,
-                                               token: Constants.RESPONSETYPE_FOLDERSELECTION,
+                                               token: Constants.RESPONSETYPE_SAVEAS,
+                                               action: SaveAs);
+
+            MessengerInstance.Register<string>(recipient: this,
+                                               token: Constants.RESPONSETYPE_FOLDER,
                                                action: SaveAll);
         }
 
@@ -222,8 +226,7 @@ namespace SFVAnimationsEditor.ViewModel
             }
         }
 
-        // TODO: stop shortcutting MVVM design pattern in this function :(
-        private void SaveAs()
+        private void RequestSaveAs()
         {
             if (!UFile.ContentStruct.Value.ContainsKey(AnimationsEditorViewModel.CONTAINER_KEY) &&
                 !UFile.ContentStruct.Value.ContainsKey(VfxEditorViewModel.CONTAINER_KEY) &&
@@ -234,19 +237,46 @@ namespace SFVAnimationsEditor.ViewModel
                 return;
             }
 
-            var fileInfo = new FileInfo(FilePath);
-            
-            // dependency on Windows here. this should be called elsewhere, and the result returned here
-            var saveDialog = new Microsoft.Win32.SaveFileDialog()
-            {
-                Filter = "UAsset files (*.uasset)|*.uasset|All files (*.*)|*.*",
-                FileName = fileInfo.Name
-            };
+            MessengerInstance.Send<NotificationMessage<string>>(
+                token:   Constants.REQUEST_DIALOG,
+                message: new NotificationMessage<string>(FilePath, Constants.REQUESTTYPE_SAVEAS));
+        }
 
-            if (saveDialog.ShowDialog() == false) return;
-
+        private void SaveAs(string savePath)
+        {
             Console.WriteLine($"\n({DateTime.Now}) Saving..." );
 
+            CommitData(); // set Uasset object's data to be the modified data
+            
+            try
+            {
+                var tempPath = CreateTempFile();
+
+                // save
+                var br = new BinaryReader(File.OpenRead(tempPath));
+                var bw = new BinaryWriter(File.Create(savePath));
+                UFile.WriteUasset(ref br, ref bw);
+                
+                // finish, delete temp file
+                br.Dispose(); // release resources used by reader so the temp file can be deleted/renamed
+                DeleteTempFile(tempPath, savePath);
+
+                FilePath = savePath; // Update FilePath to the new path
+
+                Console.WriteLine($"\n({DateTime.Now}) Save complete.");
+            }
+            catch (Exception e)
+            {
+                _dialogService.ShowError(e, "An error occurred while saving");
+            }
+
+#if DEBUG
+            //DeclarationItems = new ObservableCollection<DeclarationItem>(UFile.Declaration.Items);
+#endif
+        }
+
+        private void CommitData()
+        {
             // Update Strings List
             UpdateStringsList();
 
@@ -255,55 +285,34 @@ namespace SFVAnimationsEditor.ViewModel
 
             // Convert Editor List VM into Uasset Form (ArrayProperty, etc)
             UFile.ContentStruct = CurrentEditor.GetModifiedContent(ModifiedDeclareBlock);
-            
+
             // Update Imports List
             UpdateImports();
-            
-            try
-            {
-                // make temp file
-                fileInfo = new FileInfo(FilePath);
-                var tempName = fileInfo.FullName + ".tmp";
-
-                // delete any accidentally leftover temp file
-                if (File.Exists(tempName))
-                {
-                    if (File.GetAttributes(tempName) != FileAttributes.Temporary)
-                        File.SetAttributes(tempName, FileAttributes.Temporary);
-                    File.Delete(tempName);
-                }
-                File.Move(fileInfo.FullName, tempName);
-                File.SetAttributes(tempName, FileAttributes.Temporary);
-
-                // save
-                var br = new BinaryReader(File.OpenRead(tempName));
-                var bw = new BinaryWriter(File.Create(saveDialog.FileName));
-                UFile.WriteUasset(ref br, ref bw);
-                Console.WriteLine($"\n({DateTime.Now}) Save complete.");
-
-                // delete temp file
-                br.Dispose(); // release resources used by reader so the temp file can be deleted/renamed
-                if (FilePath != saveDialog.FileName)
-                {
-                    File.Move(tempName, FilePath); // rename tmp back to original if it wasn't overwritten
-                    FilePath = saveDialog.FileName; // Update file path to new path
-                }
-                else
-                {
-                    File.Delete(tempName); // delete tmp if original was overwritten
-                }
-            }
-            catch (Exception)
-            {
-                throw;
-            }
-
-#if DEBUG
-            DeclarationItems = new ObservableCollection<DeclarationItem>(UFile.Declaration.Items);
-#endif
         }
 
-        // TODO: Use DialogService
+        private string CreateTempFile()
+        {
+            // make temp file
+            var fileInfo = new FileInfo(FilePath);
+            var tempName = fileInfo.FullName + ".tmp";
+
+            // delete any accidentally leftover temp file
+            if (File.Exists(tempName)) File.Delete(tempName);
+
+            File.Move(fileInfo.FullName, tempName); // rename original file to temp name, so we can overwrite the original file, if needed
+            File.SetAttributes(tempName, FileAttributes.Temporary);
+
+            return tempName;
+        }
+
+        private void DeleteTempFile(string tempPath, string savePath)
+        {
+            if (FilePath != savePath)          // if user saved the file under a different name...
+                File.Move(tempPath, FilePath); // rename tmp back to original name since it wasn't 
+            else
+                File.Delete(tempPath);         // or just delete tmp if original was overwritten
+        }
+
         private void RequestSaveAll()
         {
             // Send warning to make sure user knows what they're doing!
@@ -314,8 +323,6 @@ namespace SFVAnimationsEditor.ViewModel
                 MessengerInstance.Send(token: Constants.REQUEST_DIALOG, message: Constants.REQUESTTYPE_FOLDER);
             // if user selects a folder, this VM will receive a message which initiates the callback action, SaveAll
 
-            // TODO: need a message that returns the result of the folder selection, instead of two separate messages/listeners
-            
             // ? - Let Animations Editor VM handle the actual saving? Spaghetti code? Separation of duties? Who knows?
         }
 
@@ -363,6 +370,7 @@ namespace SFVAnimationsEditor.ViewModel
             }
 
             // TODO: do stuff
+            // save backups for all files to be changed
         }
 
         // What is isFilePreselected actually doing? Why did I put that there? Rename it so it makes sense >:(
