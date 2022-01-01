@@ -13,6 +13,7 @@ using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Ioc;
 using Microsoft.Practices.ServiceLocation;
 using SFVAnimationsEditor.Model;
+using SFVAnimationsEditor.WpfUtil;
 
 namespace SFVAnimationsEditor.ViewModel
 {
@@ -38,11 +39,13 @@ namespace SFVAnimationsEditor.ViewModel
                 SimpleIoc.Default.Register<IDataService, DataService>();
             }
 
+            SimpleIoc.Default.Register<IDialogService, WpfUtil.DialogService>(createInstanceImmediately: true);
+
             SimpleIoc.Default.Register<AnimationsEditorViewModel>();
             SimpleIoc.Default.Register<VfxEditorViewModel>();
             SimpleIoc.Default.Register<TrailEditorViewModel>();
             SimpleIoc.Default.Register<StringEditorViewModel>();
-            SimpleIoc.Default.Register<MainViewModel>();
+            SimpleIoc.Default.Register<MainViewModel>(true);
         }
 
         /// <summary>

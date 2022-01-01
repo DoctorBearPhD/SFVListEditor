@@ -20,6 +20,7 @@ namespace SFVAnimationsEditor.Resources
         public const string RESPONSETYPE_FOLDERSELECTION = "REST_FS";
 
         public const string DISPLAY_MESSAGE = "DISP_MSG";
+        public const string DISPLAY_ERROR   = "DISP_ERR";
 
         public const string TITLE_FOLDERSELECTION = "Select a folder...";
 

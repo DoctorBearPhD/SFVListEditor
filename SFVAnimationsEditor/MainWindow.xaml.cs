@@ -3,6 +3,10 @@ using GalaSoft.MvvmLight.Messaging;
 using SFVAnimationsEditor.Resources;
 using SFVAnimationsEditor.ViewModel;
 using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 using WK.Libraries.BetterFolderBrowserNS;
@@ -41,7 +45,8 @@ namespace SFVAnimationsEditor
             Closing += (s, e) => ViewModelLocator.Cleanup();
 
             _messenger = Messenger.Default;
-            _messenger.Register<NotificationMessage>(this, Constants.DISPLAY_MESSAGE, DisplayMessageBox); // Register listener here, instead of in the VM, because message boxes are part of the View
+            
+            // Register listeners for dialog display requests here, instead of in the VM, because dialog boxes are part of the View
             _messenger.Register<string>(this, Constants.REQUEST_DIALOG, DialogRequestHandler);
 
 #if DEBUG
@@ -65,8 +70,8 @@ namespace SFVAnimationsEditor
             //Console.WriteLine("Console ready.\n");
             Console.WriteLine("Console disabled.\n");
 
-            mainVM = SimpleIoc.Default.GetInstance<MainViewModel>();
-            DataContext = mainVM;
+            try { mainVM = (MainViewModel)DataContext; }
+            catch { System.Diagnostics.Debug.WriteLine("Could not set Main VM. Data context may not have been set."); }
 
             if (filePath != "")
             {
@@ -91,11 +96,6 @@ namespace SFVAnimationsEditor
 
             //System.Windows.Data.BindingOperations.SetBinding(declarationViewer, DataGrid.ItemsSourceProperty, binding);
 #endif
-        }
-
-        private void DisplayMessageBox(NotificationMessage message)
-        {
-            MessageBox.Show(message.Notification);
         }
 
         private void DialogRequestHandler(string str)

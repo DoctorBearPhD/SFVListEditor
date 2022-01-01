@@ -10,6 +10,8 @@ using System.Linq;
 using UassetLib;
 using SFVAnimationsEditor.Resources;
 using GalaSoft.MvvmLight.Messaging;
+using System.Text.RegularExpressions;
+using SFVAnimationsEditor.WpfUtil;
 
 namespace SFVAnimationsEditor.ViewModel
 {
@@ -22,6 +24,7 @@ namespace SFVAnimationsEditor.ViewModel
     public class MainViewModel : ViewModelBase
     {
         ////private readonly IDataService _dataService;
+        private readonly IDialogService _dialogService;
 
         public string FilePath = "";
 
@@ -109,7 +112,7 @@ namespace SFVAnimationsEditor.ViewModel
         /// <summary>
         /// Initializes a new instance of the MainViewModel class.
         /// </summary>
-        public MainViewModel(IDataService dataService = null)
+        public MainViewModel(IDialogService dialogService)
         {
             ////_dataService = dataService;
             ////_dataService.GetData(
@@ -121,6 +124,8 @@ namespace SFVAnimationsEditor.ViewModel
             ////            return;
             ////        }
             ////    });
+
+            _dialogService = dialogService;
 
             AnimationsEditor = SimpleIoc.Default.GetInstance<AnimationsEditorViewModel>();
             VfxEditor = SimpleIoc.Default.GetInstance<VfxEditorViewModel>();
@@ -176,7 +181,7 @@ namespace SFVAnimationsEditor.ViewModel
                     TrailEditor.GetTrailList(UFile.ContentStruct, UFile.Declaration);
                 }
                 else
-                {
+                { // TODO: Display using DialogService
                     Console.WriteLine("WARNING!!! - Could not display the file contents! Only the following types of UAsset files are allowed:\n\t" +
                         "1) AnimSeqWithIdList\n\t" +
                         "2) PSListContainer\n\t" +
@@ -230,7 +235,8 @@ namespace SFVAnimationsEditor.ViewModel
             }
 
             var fileInfo = new FileInfo(FilePath);
-
+            
+            // dependency on Windows here. this should be called elsewhere, and the result returned here
             var saveDialog = new Microsoft.Win32.SaveFileDialog()
             {
                 Filter = "UAsset files (*.uasset)|*.uasset|All files (*.*)|*.*",
@@ -297,20 +303,66 @@ namespace SFVAnimationsEditor.ViewModel
 #endif
         }
 
+        // TODO: Use DialogService
         private void RequestSaveAll()
         {
             // Send warning to make sure user knows what they're doing!
-            MessengerInstance.Send(token: Constants.DISPLAY_MESSAGE, message: new NotificationMessage(Constants.WARNING_SAVE_ALL));
+            bool shouldContinue = _dialogService.ShowMessageWithResult(message: Constants.WARNING_SAVE_ALL, "Warning!");
 
             // Request folder selection
-            MessengerInstance.Send(token: Constants.REQUEST_DIALOG, message: Constants.REQUESTTYPE_FOLDER);
+            if (shouldContinue)
+                MessengerInstance.Send(token: Constants.REQUEST_DIALOG, message: Constants.REQUESTTYPE_FOLDER);
+            // if user selects a folder, this VM will receive a message which initiates the callback action, SaveAll
 
-            // Let Animations Editor VM handle the actual saving? Spaghetti code? Separation of duties? Who knows?
+            // TODO: need a message that returns the result of the folder selection, instead of two separate messages/listeners
+            
+            // ? - Let Animations Editor VM handle the actual saving? Spaghetti code? Separation of duties? Who knows?
         }
 
         private void SaveAll(string selectedFolder)
         {
-            MessengerInstance.Send<NotificationMessage>(token: Constants.DISPLAY_MESSAGE, message: new NotificationMessage("SaveAll reached. Selected folder: " + selectedFolder)); // DEBUG
+            #region    DEBUG STUFF START
+            selectedFolder = @"D:\SteamLibrary\steamapps\common\StreetFighterV\StreetFighterV\Content\Paks\CHARAEXTRACT\StreetFighterV\Content\Chara";
+            //selectedFolder = @"D:\SteamLibrary\steamapps\common\StreetFighterV\StreetFighterV\Content\Paks\CHARAEXTRACT\StreetFighterV\Content\Char"; // bad version
+            #endregion DEBUG STUFF END
+
+            // generate a list of files that would be overridden
+            Regex fileNamePatternRegex = new Regex(@"(...)\\DataAsset\\DA_\1_AnimSeqWithIdContainer\.uasset"); // regex to use in search
+            const string fileNamePattern = @"DA_???_AnimSeqWithIdContainer.uasset"; // pattern (with wildcards) to use in search
+
+            List<string> matchingFiles;
+            string matchingFilesString = "";
+
+            try
+            {
+                matchingFiles = new List<string>(Directory.EnumerateFiles(
+                    selectedFolder, fileNamePattern, SearchOption.AllDirectories)
+                    .Where(path => fileNamePatternRegex.IsMatch(path, selectedFolder.Length + 1)));
+
+                foreach (string s in matchingFiles)
+                {
+                    matchingFilesString += s.Remove(0, selectedFolder.Length + 1) + "\n";
+                }
+
+                if (matchingFiles.Count == 0) 
+                    throw new Exception("Could not find any files to change. (Did you select a Chara folder?)");
+
+                // display list, return if cancelled
+                if (!_dialogService.ShowMessageWithResult(matchingFilesString, "These files will be changed")) 
+                    return;
+            }
+            catch (DirectoryNotFoundException badDirEx)
+            {
+                _dialogService.ShowError(badDirEx.Message, "Could not find directory!");
+                return;
+            }
+            catch (Exception ex) // misc exceptions
+            {
+                _dialogService.ShowError(ex.Message, "Something went wrong...");
+                return;
+            }
+
+            // TODO: do stuff
         }
 
         // What is isFilePreselected actually doing? Why did I put that there? Rename it so it makes sense >:(

@@ -93,6 +93,7 @@
     <Compile Include="Design\DesignDataService.cs" />
     <Compile Include="Model\DataItem.cs" />
     <Compile Include="Model\DataService.cs" />
+    <Compile Include="WpfUtil\DialogService.cs" />
     <Compile Include="Model\IDataService.cs" />
     <Compile Include="Model\Lists\ListItem.cs" />
     <Compile Include="Model\Lists\TrailListItem.cs" />
@@ -115,6 +116,7 @@
     <Compile Include="ViewModel\TrailEditorViewModel.cs" />
     <Compile Include="ViewModel\VfxEditorViewModel.cs" />
     <Compile Include="ViewModel\ViewModelLocator.cs" />
+    <Compile Include="WpfUtil\IDialogService.cs" />
     <Compile Include="WpfUtil\MultiOutTextWriter.cs" />
     <Compile Include="WpfUtil\OutputWriter.cs" />
     <Page Include="AnimationsEditorView.xaml">

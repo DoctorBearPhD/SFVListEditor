@@ -40,8 +40,6 @@ namespace SFVAnimationsEditor.ViewModel
         {
             AnimSeqLists = new ObservableCollection<AnimationListVm>();
             Strings = new List<StringProperty>();
-
-            //MessengerInstance.Register<string>(this, token: Constants.RESPONSETYPE_FOLDERSELECTION, action: someAction);
         }
 
 
