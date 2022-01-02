@@ -23,14 +23,14 @@ namespace SFVAnimationsEditor
 
         public string TEMP_FILEPATH =>
         //    "";
-        //    "\\originals\\DA_NCL_AnimSeqWithIdContainer.uasset";
-        //    "\\originals\\DA_KRN_PSListContainer.uasset";
-        //    "\\originals\\DA_RYU_PSListContainer.uasset";
-        //    "\\originals\\DA_RYU_TrailList.uasset";
-        //    "DA_RYU_AnimSeqWithIdContainer.uasset";
-            "\\originals\\DA_Z26_AnimSeqWithIdContainer.uasset";
-        //    "\\originals\\DA_Z41_AnimSeqWithIdContainer.uasset";
-        //    "\\originals\\DA_Z41_Prop_01.uasset";
+        //    @"\originals\DA_NCL_AnimSeqWithIdContainer.uasset";
+        //    @"\originals\DA_KRN_PSListContainer.uasset";
+        //    @"\originals\DA_RYU_PSListContainer.uasset";
+        //    @"\originals\DA_RYU_TrailList.uasset";
+        //    @"DA_RYU_AnimSeqWithIdContainer.uasset";
+            @"\originals\DA_Z26_AnimSeqWithIdContainer.uasset";
+        //    @"\originals\DA_Z41_AnimSeqWithIdContainer.uasset";
+        //    @"\originals\DA_Z41_Prop_01.uasset";
 #endif
 
         public MainViewModel mainVM;

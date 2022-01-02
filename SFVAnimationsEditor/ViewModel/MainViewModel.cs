@@ -323,6 +323,7 @@ namespace SFVAnimationsEditor.ViewModel
                 MessengerInstance.Send<NotificationMessage<string>>(
                     token: Constants.REQUEST_DIALOG, 
                     message: new NotificationMessage<string>("", Constants.REQUESTTYPE_FOLDER)); // for folder selection, we just tell the request type
+            
             // if user selects a folder, this VM will receive a message which initiates the callback action, SaveAll
 
             // ? - Let Animations Editor VM handle the actual saving? Spaghetti code? Separation of duties? Who knows?
@@ -330,11 +331,6 @@ namespace SFVAnimationsEditor.ViewModel
 
         private void SaveAll(string selectedFolder)
         {
-            #region    DEBUG STUFF START
-            //selectedFolder = @"D:\SteamLibrary\steamapps\common\StreetFighterV\StreetFighterV\Content\Paks\CHARAEXTRACT\StreetFighterV\Content\Chara";
-            //selectedFolder = @"D:\SteamLibrary\steamapps\common\StreetFighterV\StreetFighterV\Content\Paks\CHARAEXTRACT\StreetFighterV\Content\Char"; // bad version
-            #endregion DEBUG STUFF END
-
             // generate a list of files that would be overridden
             Regex fileNamePatternRegex = new Regex(@"(...)\\DataAsset\\DA_\1_AnimSeqWithIdContainer\.uasset"); // regex to use in search
             const string fileNamePattern = @"DA_???_AnimSeqWithIdContainer.uasset"; // pattern (with wildcards) to use in search
@@ -371,8 +367,24 @@ namespace SFVAnimationsEditor.ViewModel
                 return;
             }
 
-            // TODO: do stuff
             // save backups for all files to be changed
+
+            // create backup folder using selectedFolder
+            List<string> backupFiles = new List<string>(matchingFiles);
+            
+            string backupFolderName = selectedFolder + "Backup";
+            string newFilePath = "";
+            string newFileDir  = "";
+
+            for (var i = 0; i < backupFiles.Count; i++)
+            {
+                string path = backupFiles[i];
+                newFilePath = path.Replace(selectedFolder, backupFolderName); // replaces "Chara" with "CharaBackup"
+                newFileDir  = new FileInfo(newFilePath).DirectoryName;        // gets the path of the file without the file name
+                Directory.CreateDirectory(newFileDir);                        // makes new (sub)directories as needed
+
+                File.Copy(matchingFiles[i], newFilePath, true);
+            }
         }
 
         // What is isFilePreselected actually doing? Why did I put that there? Rename it so it makes sense >:(
